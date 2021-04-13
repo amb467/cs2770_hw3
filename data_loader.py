@@ -88,8 +88,8 @@ def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle,
     train_val_size = math.floor(train_val_proportion * len(data_sets['train']))
     
     for i in range(train_val_size):
-        data_sets['val'].append(data_sets['train'.pop())
-        data_sets['test'].append(data_sets['train'.pop())
+        data_sets['val'].append(data_sets['train'].pop())
+        data_sets['test'].append(data_sets['train'].pop())
     
     # Create an embedding dictionary
     vocab = {}
