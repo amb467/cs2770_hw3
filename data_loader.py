@@ -85,7 +85,7 @@ def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle,
     coco = COCO(json)
     data_sets['train'] = list(coco.anns.keys())
     random.shuffle(data_sets['train'])
-    train_val_size = math.floor(train_val_proportion * len(data_sets['train'))
+    train_val_size = math.floor(train_val_proportion * len(data_sets['train']))
     
     for i in range(train_val_size):
         data_sets['val'].append(data_sets['train'.pop())
