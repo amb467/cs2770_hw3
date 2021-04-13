@@ -1,4 +1,5 @@
 import argparse, os, pathlib, torch
+from torchvision import transforms
 from data_loader import get_loaders
 
 # Device configuration
