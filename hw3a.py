@@ -10,6 +10,7 @@ parser.add_argument('--epochs', type=int, default=25, help='The number of epochs
 parser.add_argument('--data_dir', type=pathlib.Path, help='The data set to use for training, testing, and validation')
 parser.add_argument('--json_file', type=pathlib.Path, help='The json file with data set captions')
 parser.add_argument('--embedding_file', type=pathlib.Path, help='The embedding file')
+parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
 args = parser.parse_args()
 
 data_transforms = transforms.Compose([
@@ -21,14 +22,12 @@ data_transforms = transforms.Compose([
 batch_size = 128
 num_workers = 2
 data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
-    
-"""
-
-encoder, decoder, data_loader, config = proc(args, 'train', root_dir, 'train.py')
 
 # Create model directory
-if not os.path.exists(config['model_dir']):
-    os.makedirs(config['model_dir'])
+if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
+       
+"""
 
 # Put models on device
 encoder = encoder.to(device)
