@@ -35,8 +35,8 @@ class CocoDataset(data.Dataset):
 
         if not os.path.exists(img_path):
             r = requests.get(img_url)
-                with open(img_file_path,'wb') as f:
-                    f.write(r.content)
+            with open(img_file_path,'wb') as f:
+                f.write(r.content)
         
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
