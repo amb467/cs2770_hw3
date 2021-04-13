@@ -29,13 +29,15 @@ class CocoDataset(data.Dataset):
         ann_id = self.ids[index]
         caption = coco.anns[ann_id]['caption']
         img_id = coco.anns[ann_id]['image_id']
-        img = coco.loadImgs(img_id)[0]
-        img_path = os.path.join(self.root, img['file_name'])
+        img_path = os.path.join(self.root, coco.loadImgs(img_id)[0]['file_name'])
+        image = Image.open(img_path).convert('RGB')
+        if self.transform is not None:
+            image = self.transform(image)
 
         print(f'Caption is: {caption}')
         # Convert caption (string) to embedding vectors.
         tokens = nltk.tokenize.word_tokenize(str(caption).lower())
-        caption = [vocab[token] for token in tokens]
+        caption = [vocab(token) for token in tokens]
         target = torch.Tensor(np.mean(caption, axis=1))
         print(f'Target is {target}')
         return image, target
