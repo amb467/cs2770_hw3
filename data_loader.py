@@ -36,7 +36,7 @@ class CocoDataset(data.Dataset):
         if self.transform is not None:
             image = self.transform(image)
 
-		print(f'Caption is: {caption}')
+        print(f'Caption is: {caption}')
         # Convert caption (string) to embedding vectors.
         tokens = nltk.tokenize.word_tokenize(str(caption).lower())
         caption = [vocab(token) for token in tokens]
@@ -79,13 +79,13 @@ def collate_fn(data):
 
 def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle, num_workers):
 
-	# Divide the data set up in training, validation, and test sets
-	train_val_proportion = 0.08
-	data_sets = defaultdict(list)
-	coco = COCO(json)
-	data_sets['train'] = list(coco.anns.keys())
-	random.shuffle(data_sets['train'])
-	train_val_size = math.floor(train_val_proportion * len(data_sets['train'))
+    # Divide the data set up in training, validation, and test sets
+    train_val_proportion = 0.08
+    data_sets = defaultdict(list)
+    coco = COCO(json)
+    data_sets['train'] = list(coco.anns.keys())
+    random.shuffle(data_sets['train'])
+    train_val_size = math.floor(train_val_proportion * len(data_sets['train'))
     
     for i in range(train_val_size):
         data_sets['val'].append(data_sets['train'.pop())
@@ -93,18 +93,18 @@ def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle,
     
     # Create an embedding dictionary
     vocab = {}
-	with open(embedding_file, 'r') as f:
-		for line in f:
-			values = line.split()
-			word = values[0]
-			vector = np.asarray(values[1:], "float32")
-			vocab[word] = vector
+    with open(embedding_file, 'r') as f:
+        for line in f:
+            values = line.split()
+            word = values[0]
+            vector = np.asarray(values[1:], "float32")
+            vocab[word] = vector
     
     data_loaders = {}
     for ds, ids in data_sets.items():
-    	coco = 	CocoDataset(root, ids, vocab, transform)
-    	coco.__getitem__(5)
-    	data_loaders[ds] = torch.utils.data.DataLoader(dataset=coco, 
+        coco =  CocoDataset(root, ids, vocab, transform)
+        coco.__getitem__(5)
+        data_loaders[ds] = torch.utils.data.DataLoader(dataset=coco, 
                                               batch_size=batch_size,
                                               shuffle=shuffle,
                                               num_workers=num_workers,
