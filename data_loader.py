@@ -8,7 +8,7 @@ from pycocotools.coco import COCO
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
-    def __init__(self, root, ids, vocab, transform=None):
+    def __init__(self, root, coco, ids, vocab, transform=None):
         """Set the path for images, captions and vocabulary wrapper.
         
         Args:
@@ -18,7 +18,7 @@ class CocoDataset(data.Dataset):
             transform: image transformer.
         """
         self.root = root
-        self.coco = COCO(json)
+        self.coco = coco
         self.ids = ids
         self.vocab = vocab
         self.transform = transform
@@ -82,7 +82,7 @@ def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle,
     # Divide the data set up in training, validation, and test sets
     train_val_proportion = 0.08
     data_sets = defaultdict(list)
-    coco = COCO(json)
+    coco = COCO(json_file)
     data_sets['train'] = list(coco.anns.keys())
     random.shuffle(data_sets['train'])
     train_val_size = math.floor(train_val_proportion * len(data_sets['train']))
@@ -102,9 +102,9 @@ def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle,
     
     data_loaders = {}
     for ds, ids in data_sets.items():
-        coco =  CocoDataset(root, ids, vocab, transform)
-        coco.__getitem__(5)
-        data_loaders[ds] = torch.utils.data.DataLoader(dataset=coco, 
+        coco_ds =  CocoDataset(root, coco, ids, vocab, transform)
+        coco_ds.__getitem__(5)
+        data_loaders[ds] = torch.utils.data.DataLoader(dataset=coco_ds, 
                                               batch_size=batch_size,
                                               shuffle=shuffle,
                                               num_workers=num_workers,
