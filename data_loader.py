@@ -33,10 +33,10 @@ class CocoDataset(data.Dataset):
         img_path = os.path.join(self.root, img['file_name'])
         img_url = img['coco_url']
 
-		if not os.path.exists(img_path):
-			r = requests.get(img_url)
-        		with open(img_file_path,'wb') as f:
-        			f.write(r.content)
+        if not os.path.exists(img_path):
+            r = requests.get(img_url)
+                with open(img_file_path,'wb') as f:
+                    f.write(r.content)
         
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:

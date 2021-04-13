@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 # Create directories
 if not os.path.exists(args.data_dir):
-	os.makedirs(args.data_dir)
+    os.makedirs(args.data_dir)
 if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
