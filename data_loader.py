@@ -31,6 +31,7 @@ class CocoDataset(data.Dataset):
         img_id = coco.anns[ann_id]['image_id']
         img = coco.loadImgs(img_id)[0]
         img_path = os.path.join(self.root, img['file_name'])
+        """
         img_url = img['coco_url']
 
         if not os.path.exists(img_path):
@@ -41,7 +42,7 @@ class CocoDataset(data.Dataset):
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
             image = self.transform(image)
-
+		"""
         print(f'Caption is: {caption}')
         # Convert caption (string) to embedding vectors.
         tokens = nltk.tokenize.word_tokenize(str(caption).lower())
