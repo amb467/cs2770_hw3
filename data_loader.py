@@ -38,7 +38,7 @@ class CocoDataset(data.Dataset):
         # Convert caption (string) to embedding vectors.
         tokens = nltk.tokenize.word_tokenize(str(caption).lower())
         caption = [vocab[token] for token in tokens]
-        target = torch.Tensor(np.mean(caption, axis=1))
+        target = torch.Tensor(np.mean(caption, axis=0))
         print(f'Target is {target}')
         return image, target
 
@@ -82,10 +82,8 @@ def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle,
     data_sets = defaultdict(list)
     coco = COCO(json_file)
     data_sets['train'] = list(coco.anns.keys())
-    print(f"Total ids is {len(data_sets['train'])}")
     random.shuffle(data_sets['train'])
     train_val_size = math.floor(train_val_proportion * len(data_sets['train']))
-    print(f'Test and validation set size: {train_val_size}')
     
     for i in range(train_val_size):
         data_sets['val'].append(data_sets['train'].pop())
