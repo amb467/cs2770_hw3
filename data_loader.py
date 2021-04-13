@@ -37,7 +37,7 @@ class CocoDataset(data.Dataset):
         print(f'Caption is: {caption}')
         # Convert caption (string) to embedding vectors.
         tokens = nltk.tokenize.word_tokenize(str(caption).lower())
-        caption = [vocab(token) for token in tokens]
+        caption = [vocab[token] for token in tokens]
         target = torch.Tensor(np.mean(caption, axis=1))
         print(f'Target is {target}')
         return image, target
