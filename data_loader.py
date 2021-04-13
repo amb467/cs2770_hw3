@@ -1,10 +1,9 @@
-import os, math, nltk, random, numpy as np, torch
+import os, math, nltk, random, requests, numpy as np, torch
 import torchvision.transforms as transforms
 import torch.utils.data as data
 from collections import defaultdict
 from PIL import Image
 from pycocotools.coco import COCO
-
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
@@ -30,9 +29,16 @@ class CocoDataset(data.Dataset):
         ann_id = self.ids[index]
         caption = coco.anns[ann_id]['caption']
         img_id = coco.anns[ann_id]['image_id']
-        path = coco.loadImgs(img_id)[0]['file_name']
+        img = coco.loadImgs(img_id)[0]
+        img_path = os.path.join(self.root, img['file_name'])
+        img_url = img['coco_url']
 
-        image = Image.open(os.path.join(self.root, path)).convert('RGB')
+		if not os.path.exists(img_path):
+			r = requests.get(img_url)
+        		with open(img_file_path,'wb') as f:
+        			f.write(r.content)
+        
+        image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
             image = self.transform(image)
 

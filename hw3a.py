@@ -13,6 +13,13 @@ parser.add_argument('--embedding_file', type=pathlib.Path, help='The embedding f
 parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
 args = parser.parse_args()
 
+# Create directories
+if not os.path.exists(args.data_dir):
+	os.makedirs(args.data_dir)
+if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
+
+# Get data loaders
 data_transforms = transforms.Compose([
         transforms.Resize((224,224)),
         transforms.ToTensor(),
@@ -23,9 +30,6 @@ batch_size = 128
 num_workers = 2
 data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
 
-# Create model directory
-if not os.path.exists(args.output_dir):
-    os.makedirs(args.output_dir)
        
 """
 
