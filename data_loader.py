@@ -13,7 +13,12 @@ class CocoDataset(data.Dataset):
         self.ids = ids
         self.vocab = vocab
         self.transform = transform
+        self.vocab_mean = np.mean(self.vocab, axis=0)
+        print(f'Mean size: {self.vocab_mean.size()}')
 
+	def _get_token_vec(self, token):
+		return self.vocab[token] if token in self.vocab else self.vocab_mean
+		
     def __getitem__(self, index):
         """Returns one data pair (image and caption)."""
         coco = self.coco
@@ -28,7 +33,7 @@ class CocoDataset(data.Dataset):
 
         # Convert caption (string) to embedding vectors.
         tokens = nltk.tokenize.word_tokenize(str(caption).lower())
-        caption = [vocab[token] for token in tokens]
+        caption = [self._get_token(token) for token in tokens]
         target = torch.Tensor(np.mean(caption, axis=0))
         return image, target
 
