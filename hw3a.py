@@ -41,11 +41,6 @@ num_workers = 2
 #data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
 
 
-
-l = triplet_loss(a, p, n)
-print(f'Triplet loss: {l}')
-
-
 model = models.alexnet(pretrained=True)
 summary(model, (1, 299, 299))
 
