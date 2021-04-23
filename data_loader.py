@@ -26,7 +26,7 @@ class CocoDataset(data.Dataset):
         caption = coco.anns[ann_id]['caption']
         img_id = coco.anns[ann_id]['image_id']
         img_path = os.path.join(self.root, coco.loadImgs(img_id)[0]['file_name'])
-        image = Image.open(img_path).convert('RGB')
+        image = Image.open(img_path).convert('L')
         if self.transform is not None:
             image = self.transform(image)
 
