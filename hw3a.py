@@ -42,7 +42,9 @@ num_workers = 2
 
 
 model = models.alexnet(pretrained=True)
-summary(model, (1, 299, 299))
+
+print("Summarizing...")
+summary(model, (3, 299, 299))
 
 #model.to(device)
 
