@@ -1,6 +1,9 @@
 import argparse, os, pathlib, torch
+import torchvision.models as models
 from torchvision import transforms
 from data_loader import get_loaders
+from torchsummary import summary
+
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -23,9 +26,7 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
 	x2 = torch.stack([positive, negative], 0)
 	distance = torch.cdist(x1, x2).tolist()[0]
 	pos_dist = float(distance[0])
-	print(f'pos distance: {pos_dist}')
 	neg_dist = float(distance[1])
-	print(f'neg distance: {neg_dist}')
 	return max(pos_dist - neg_dist + margin, 0)
 
 # Get data loaders
@@ -39,18 +40,15 @@ batch_size = 128
 num_workers = 2
 #data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
 
-a = torch.rand(2)
-print(f'anchor: {a}')
-p = torch.rand(2)
-print(f'pos: {p}')
-n = torch.rand(2)
-print(f'neg: {n}')
+
 
 l = triplet_loss(a, p, n)
 print(f'Triplet loss: {l}')
 
 
-#model = EncoderCNN()
+model = models.alexnet(pretrained=True)
+summary(model, (1, 299, 299))
+
 #model.to(device)
 
 
