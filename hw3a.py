@@ -55,7 +55,7 @@ for epoch in range(1,args.epochs+1):
     
     model.train()
     
-    for inputs, targets in data_loader['train']:
+    for inputs, targets in data_loaders['train']:
         
         # Set mini-batch dataset
         inputs = inputs.to(device)
