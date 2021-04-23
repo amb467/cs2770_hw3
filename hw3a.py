@@ -47,7 +47,7 @@ model = models.alexnet(pretrained=True)
 model.to(device)
 #summary(model, (3, 299, 299))
 
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9),
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 # Train the models
 for epoch in range(1,args.epochs+1):
