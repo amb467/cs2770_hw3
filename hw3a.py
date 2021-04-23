@@ -23,7 +23,7 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
 	print(f'x1: {x1}')
 	x2 = torch.stack([positive, negative], 0)
 	print(f'x2: {x2}')
-	distance = torch.cdist(x1, x2).tolist()
+	distance = torch.cdist(x1, x2).tolist()[0]
 	print(f'distance: {distance}')
 	pos_dist = float(distance[0])
 	print(f'pos distance: {pos_dist}')
