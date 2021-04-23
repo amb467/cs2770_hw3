@@ -13,7 +13,9 @@ class CocoDataset(data.Dataset):
         self.ids = ids
         self.vocab = vocab
         self.transform = transform
-        self.vocab_mean = np.mean(np.asarray(self.vocab.keys()), axis=0)
+        vk = np.asarray(self.vocab.values())
+        print(f'Vocab size: {vk.size()}')
+        self.vocab_mean = np.mean(np.asarray(self.vocab.values()), axis=0)
         print(f'Mean size: {self.vocab_mean.size()}')
 
     def _get_token_vec(self, token):
