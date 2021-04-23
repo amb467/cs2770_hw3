@@ -16,7 +16,7 @@ class CocoDataset(data.Dataset):
         vk = np.stack(list(self.vocab.values()), 0)
         print(f'Vocab: {vk.shape}; {vk.size}')
         self.vocab_mean = np.mean(np.stack(list(self.vocab.values()), 0), axis=0)
-        print(f'Mean size: {self.vocab_mean.size()}')
+        print(f'Mean size: {self.vocab_mean.shape}')
 
     def _get_token_vec(self, token):
         return self.vocab[token] if token in self.vocab else self.vocab_mean
