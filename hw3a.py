@@ -20,11 +20,8 @@ if not os.path.exists(args.output_dir):
 
 def triplet_loss(anchor, positive, negative, margin=0.5):
 	x1 = anchor.unsqueeze(0)
-	print(f'x1: {x1}')
 	x2 = torch.stack([positive, negative], 0)
-	print(f'x2: {x2}')
 	distance = torch.cdist(x1, x2).tolist()[0]
-	print(f'distance: {distance}')
 	pos_dist = float(distance[0])
 	print(f'pos distance: {pos_dist}')
 	neg_dist = float(distance[1])
@@ -42,9 +39,12 @@ batch_size = 128
 num_workers = 2
 #data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
 
-a = torch.rand(3)
-p = torch.rand(3)
-n = torch.rand(3)
+a = torch.rand(2)
+print(f'anchor: {a}')
+p = torch.rand(2)
+print(f'pos: {p}')
+n = torch.rand(2)
+print(f'neg: {n}')
 
 l = triplet_loss(a, p, n)
 print(f'Triplet loss: {l}')
