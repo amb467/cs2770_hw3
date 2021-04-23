@@ -32,6 +32,9 @@ class CocoDataset(data.Dataset):
         target = torch.Tensor(np.mean(caption, axis=0))
         return image, target
 
+    def __len__(self):
+        return len(self.ids)
+
 def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle, num_workers):
 
     # Divide the data set up in training, validation, and test sets
