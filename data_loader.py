@@ -16,9 +16,9 @@ class CocoDataset(data.Dataset):
         self.vocab_mean = np.mean(self.vocab, axis=0)
         print(f'Mean size: {self.vocab_mean.size()}')
 
-	def _get_token_vec(self, token):
-		return self.vocab[token] if token in self.vocab else self.vocab_mean
-		
+    def _get_token_vec(self, token):
+        return self.vocab[token] if token in self.vocab else self.vocab_mean
+        
     def __getitem__(self, index):
         """Returns one data pair (image and caption)."""
         coco = self.coco
