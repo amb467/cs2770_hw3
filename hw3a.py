@@ -62,8 +62,8 @@ for epoch in range(1,args.epochs+1):
         targets = targets.to(device)
 
         optimizer.zero_grad()
-        outputs = model(inputs)
-        print(f'Outputs: {outputs}')
+        #outputs = model(inputs)
+        #print(f'Outputs: {outputs}')
         break
         
         #loss = triplet_loss(outputs, targets)
