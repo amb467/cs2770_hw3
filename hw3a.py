@@ -42,11 +42,12 @@ batch_size = 128
 num_workers = 2
 #data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
 
-a = torch.rand(50)
-p = torch.rand(50)
-n = torch.rand(50)
+a = torch.rand(3)
+p = torch.rand(3)
+n = torch.rand(3)
 
 l = triplet_loss(a, p, n)
+print(f'Triplet loss: {l}')
 
 
 #model = EncoderCNN()
