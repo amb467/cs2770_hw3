@@ -1,5 +1,7 @@
 import argparse, os, pathlib, torch
+import torch.optim as optim
 import torchvision.models as models
+from torch.optim import lr_scheduler
 from torchvision import transforms
 from data_loader import get_loaders
 from torchsummary import summary
@@ -36,52 +38,38 @@ data_transforms = transforms.Compose([
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
-batch_size = 128
+#batch_size = 128
+batch_size = 3
 num_workers = 2
 #data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
 
 
 model = models.alexnet(pretrained=True)
+model.to(device)
+#summary(model, (3, 299, 299))
 
-print("Summarizing...")
-summary(model, (3, 299, 299))
-
-#model.to(device)
-
-
-       
-"""
-
-# Loss and optimizer
-criterion = nn.CrossEntropyLoss()
-params = list(decoder.parameters()) + list(encoder.linear.parameters()) + list(encoder.bn.parameters())
-optimizer = torch.optim.Adam(params, lr=config['learning_rate'])
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9),
+scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 # Train the models
-total_step = len(data_loader)
-for epoch in range(1,config['num_epochs']+1):
-    for i, (images, questions, lengths) in enumerate(data_loader):
+for epoch in range(1,args.epochs+1):
+	print(f'Epoch {epoch} of {args.epochs}')
+	
+	model.train()
+	
+    for inputs, targets in data_loader['train']:
         
         # Set mini-batch dataset
-        images = images.to(device)
-        questions = questions.to(device)
-        targets = pack_padded_sequence(questions, lengths, batch_first=True)[0]
-        
-        # Forward, backward and optimize
-        features = encoder(images)
-        outputs = decoder(features, questions, lengths)
-        loss = criterion(outputs, targets)
-        decoder.zero_grad()
-        encoder.zero_grad()
-        loss.backward()
-        optimizer.step()
+        inputs = inputs.to(device)
+       	targets = targets.to(device)
 
-        # Print log info
-        if i % config['log_step'] == 0:
-            print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Perplexity: {:5.4f}'
-                  .format(epoch, config['num_epochs'], i, total_step, loss.item(), np.exp(loss.item()))) 
-        
-    torch.save(decoder.state_dict(), os.path.join(config['model_dir'], f'decoder-{epoch}.pth'))
-    torch.save(encoder.state_dict(), os.path.join(config['model_dir'], f'encoder-{epoch}.pth'))
+		optimizer.zero_grad()
+		outputs = model(inputs)
+		print(f'Outputs: {outputs}')
+		break
+		
+		#loss = triplet_loss(outputs, targets)
+		#loss.backward()
+		#optimizer.step()
 
-"""
+	#scheduler.step()
