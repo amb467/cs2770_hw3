@@ -1,6 +1,7 @@
 import argparse, os, pathlib, torch
 import torch.optim as optim
 import torchvision.models as models
+from torch.nn import AvgPool1d
 from torch.optim import lr_scheduler
 from torchvision import transforms
 from data_loader import get_loaders
@@ -9,6 +10,7 @@ from torchsummary import summary
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+# Calculate triplet loss for the given anchor, positive, and negative tensors
 def triplet_loss(anchor, positive, negative, margin=0.5):
     x1 = anchor.unsqueeze(0)
     x2 = torch.stack([positive, negative], 0)
@@ -16,7 +18,6 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
     pos_dist = float(distance[0])
     neg_dist = float(distance[1])
     return max(pos_dist - neg_dist + margin, 0)
-
 
 def train(epochs, data_loaders):
 
@@ -26,6 +27,7 @@ def train(epochs, data_loaders):
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    m = AvgPool1d(200)
 
     # Train the models
     for epoch in range(1,epochs+1):
@@ -41,7 +43,9 @@ def train(epochs, data_loaders):
 
             optimizer.zero_grad()
             outputs = model(inputs)
-            print(f'Output size: {outputs.size()}')
+            print(f'Output before size: {outputs.size()}')
+            outputs = m(outputs)
+            print(f'Output after size: {outputs.size()}')
             break
         
             #loss = triplet_loss(outputs, targets)
