@@ -7,12 +7,16 @@ from pycocotools.coco import COCO
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
-    def __init__(self, root, coco, ids, vocab, transform=None):
+    def __init__(self, root, coco, ids, vocab):
         self.root = root
         self.coco = coco
         self.ids = ids
         self.vocab = vocab
-        self.transform = transform
+        self.transform = data_transforms = transforms.Compose([
+            transforms.Resize((224,224)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
         self.vocab_mean = np.mean(np.stack(list(self.vocab.values()), 0), axis=0)
 
     def _get_token_vec(self, token):
@@ -39,7 +43,7 @@ class CocoDataset(data.Dataset):
     def __len__(self):
         return len(self.ids)
 
-def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle, num_workers):
+def get_loaders(root, json_file, embedding_file, batch_size, num_workers):
 
     # Divide the data set up in training, validation, and test sets
     train_val_proportion = 0.08
@@ -64,10 +68,10 @@ def get_loaders(root, json_file, embedding_file, transform, batch_size, shuffle,
     
     data_loaders = {}
     for ds, ids in data_sets.items():
-        coco_ds =  CocoDataset(root, coco, ids, vocab, transform)
+        coco_ds =  CocoDataset(root, coco, ids, vocab)
         coco_ds.__getitem__(5)
         data_loaders[ds] = torch.utils.data.DataLoader(dataset=coco_ds, 
                                               batch_size=batch_size,
-                                              shuffle=shuffle,
+                                              shuffle=True,
                                               num_workers=num_workers)
     return data_loaders

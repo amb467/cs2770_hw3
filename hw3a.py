@@ -9,20 +9,6 @@ from torchsummary import summary
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-parser = argparse.ArgumentParser(description='CS2770 HW3')
-parser.add_argument('--epochs', type=int, default=25, help='The number of epochs')
-parser.add_argument('--data_dir', type=pathlib.Path, help='The data set to use for training, testing, and validation')
-parser.add_argument('--json_file', type=pathlib.Path, help='The json file with data set captions')
-parser.add_argument('--embedding_file', type=pathlib.Path, help='The embedding file')
-parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
-args = parser.parse_args()
-
-# Create directories
-if not os.path.exists(args.data_dir):
-    os.makedirs(args.data_dir)
-if not os.path.exists(args.output_dir):
-    os.makedirs(args.output_dir)
-
 def triplet_loss(anchor, positive, negative, margin=0.5):
     x1 = anchor.unsqueeze(0)
     x2 = torch.stack([positive, negative], 0)
@@ -31,45 +17,62 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
     neg_dist = float(distance[1])
     return max(pos_dist - neg_dist + margin, 0)
 
-# Get data loaders
-data_transforms = transforms.Compose([
-        transforms.Resize((224,224)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
 
-#batch_size = 128
-batch_size = 3
-num_workers = 2
-data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
+def train(epochs, data_loaders):
 
+    model = models.alexnet(pretrained=True)
+    model.to(device)
+    #summary(model, (3, 299, 299))
 
-model = models.alexnet(pretrained=True)
-model.to(device)
-#summary(model, (3, 299, 299))
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-
-# Train the models
-for epoch in range(1,args.epochs+1):
-    print(f'Epoch {epoch} of {args.epochs}')
+    # Train the models
+    for epoch in range(1,epochs+1):
+        print(f'Epoch {epoch} of {epochs}')
     
-    model.train()
+        model.train()
     
-    for inputs, targets in data_loaders['train']:
+        for inputs, targets in data_loaders['train']:
         
-        # Set mini-batch dataset
-        inputs = inputs.to(device)
-        targets = targets.to(device)
+            # Set mini-batch dataset
+            inputs = inputs.to(device)
+            targets = targets.to(device)
 
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        print(f'Output size: {outputs.size()}')
-        break
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            print(f'Output size: {outputs.size()}')
+            break
         
-        #loss = triplet_loss(outputs, targets)
-        #loss.backward()
-        #optimizer.step()
+            #loss = triplet_loss(outputs, targets)
+            #loss.backward()
+            #optimizer.step()
     
-    scheduler.step()
+        scheduler.step()
+    
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='CS2770 HW3')
+    parser.add_argument('--epochs', type=int, default=25, help='The number of epochs')
+    parser.add_argument('--data_dir', type=pathlib.Path, help='The data set to use for training, testing, and validation')
+    parser.add_argument('--json_file', type=pathlib.Path, help='The json file with data set captions')
+    parser.add_argument('--embedding_file', type=pathlib.Path, help='The embedding file')
+    parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
+    args = parser.parse_args()
+
+    # Create directories
+    if not os.path.exists(args.data_dir):
+        os.makedirs(args.data_dir)
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+    
+    # Create data loaders
+    #batch_size = 128
+    batch_size = 5
+    num_workers = 2
+    data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, batch_size, num_workers)
+    
+    # Train
+    train(args.epochs, data_loaders)
+    
+    
