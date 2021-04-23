@@ -65,7 +65,7 @@ for epoch in range(1,args.epochs+1):
 
         optimizer.zero_grad()
         outputs = model(inputs)
-        print(f'Outputs: {outputs}')
+        print(f'Output size: {outputs.size()}')
         break
         
         #loss = triplet_loss(outputs, targets)
