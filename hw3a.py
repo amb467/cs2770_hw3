@@ -1,6 +1,7 @@
 import argparse, os, pathlib, torch
 import torch.optim as optim
 import torchvision.models as models
+from torch.optim import lr_scheduler
 from torchvision import transforms
 from data_loader import get_loaders
 from torchsummary import summary
@@ -48,6 +49,7 @@ model.to(device)
 #summary(model, (3, 299, 299))
 
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 # Train the models
 for epoch in range(1,args.epochs+1):
@@ -62,10 +64,12 @@ for epoch in range(1,args.epochs+1):
         targets = targets.to(device)
 
         optimizer.zero_grad()
-        #outputs = model(inputs)
-        #print(f'Outputs: {outputs}')
+        outputs = model(inputs)
+        print(f'Outputs: {outputs}')
         break
         
         #loss = triplet_loss(outputs, targets)
         #loss.backward()
         #optimizer.step()
+    
+    scheduler.step()
