@@ -24,12 +24,12 @@ if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
 def triplet_loss(anchor, positive, negative, margin=0.5):
-	x1 = anchor.unsqueeze(0)
-	x2 = torch.stack([positive, negative], 0)
-	distance = torch.cdist(x1, x2).tolist()[0]
-	pos_dist = float(distance[0])
-	neg_dist = float(distance[1])
-	return max(pos_dist - neg_dist + margin, 0)
+    x1 = anchor.unsqueeze(0)
+    x2 = torch.stack([positive, negative], 0)
+    distance = torch.cdist(x1, x2).tolist()[0]
+    pos_dist = float(distance[0])
+    neg_dist = float(distance[1])
+    return max(pos_dist - neg_dist + margin, 0)
 
 # Get data loaders
 data_transforms = transforms.Compose([
@@ -53,23 +53,23 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 # Train the models
 for epoch in range(1,args.epochs+1):
-	print(f'Epoch {epoch} of {args.epochs}')
-	
-	model.train()
-	
+    print(f'Epoch {epoch} of {args.epochs}')
+    
+    model.train()
+    
     for inputs, targets in data_loader['train']:
         
         # Set mini-batch dataset
         inputs = inputs.to(device)
-       	targets = targets.to(device)
+        targets = targets.to(device)
 
-		optimizer.zero_grad()
-		outputs = model(inputs)
-		print(f'Outputs: {outputs}')
-		break
-		
-		#loss = triplet_loss(outputs, targets)
-		#loss.backward()
-		#optimizer.step()
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        print(f'Outputs: {outputs}')
+        break
+        
+        #loss = triplet_loss(outputs, targets)
+        #loss.backward()
+        #optimizer.step()
 
-	#scheduler.step()
+    #scheduler.step()
