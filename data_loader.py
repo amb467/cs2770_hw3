@@ -14,7 +14,7 @@ class CocoDataset(data.Dataset):
         self.vocab = vocab
         self.transform = transform
         vk = np.asarray(self.vocab.values())
-        print(f'Vocab: {vk.shape}')
+        print(f'Vocab: {vk.size}')
         self.vocab_mean = np.mean(np.asarray(self.vocab.values()), axis=0)
         print(f'Mean size: {self.vocab_mean.size()}')
 
