@@ -34,8 +34,8 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
 # Get data loaders
 data_transforms = transforms.Compose([
         transforms.Resize((224,224)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.ToTensor() #,
+        #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
 #batch_size = 128
