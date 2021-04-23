@@ -44,6 +44,7 @@ def train(epochs, data_loaders):
             optimizer.zero_grad()
             outputs = model(inputs)
             print(f'Output before size: {outputs.size()}')
+            outputs = outputs.unsqueeze(0)
             outputs = m(outputs)
             print(f'Output after size: {outputs.size()}')
             break
