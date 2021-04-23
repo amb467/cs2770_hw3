@@ -1,11 +1,10 @@
 import argparse, os, pathlib, torch
 from torchvision import transforms
 from data_loader import get_loaders
-
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-parser = argparse.ArgumentParser(description='CS2770 HW2')
+parser = argparse.ArgumentParser(description='CS2770 HW3')
 parser.add_argument('--epochs', type=int, default=25, help='The number of epochs')
 parser.add_argument('--data_dir', type=pathlib.Path, help='The data set to use for training, testing, and validation')
 parser.add_argument('--json_file', type=pathlib.Path, help='The json file with data set captions')
@@ -19,6 +18,19 @@ if not os.path.exists(args.data_dir):
 if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
+def triplet_loss(anchor, positive, negative, margin=0.5):
+	x1 = anchor.unsqueeze(0)
+	print(f'x1: {x1}')
+	x2 = torch.stack([positive, negative], 0)
+	print(f'x2: {x2}')
+	distance = torch.cdist(x1, x2)
+	print(f'distance: {distance}')
+	pos_dist = float(distance[0])
+	print(f'pos distance: {pos_dist}')
+	neg_dist = float(distance[1])
+	print(f'neg distance: {neg_dist}')
+	return max(pos_dist - neg_dist + margin, 0)
+
 # Get data loaders
 data_transforms = transforms.Compose([
         transforms.Resize((224,224)),
@@ -28,14 +40,21 @@ data_transforms = transforms.Compose([
 
 batch_size = 128
 num_workers = 2
-data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
+#data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
+
+a = torch.rand(50)
+p = torch.rand(50)
+n = torch.rand(50)
+
+l = triplet_loss(a, p, n)
+
+
+#model = EncoderCNN()
+#model.to(device)
+
 
        
 """
-
-# Put models on device
-encoder = encoder.to(device)
-decoder = decoder.to(device)
 
 # Loss and optimizer
 criterion = nn.CrossEntropyLoss()
