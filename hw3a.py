@@ -40,7 +40,7 @@ data_transforms = transforms.Compose([
 #batch_size = 128
 batch_size = 3
 num_workers = 2
-#data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
+data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, data_transforms, batch_size, True, num_workers)
 
 
 model = models.alexnet(pretrained=True)
