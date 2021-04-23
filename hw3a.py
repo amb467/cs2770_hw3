@@ -19,6 +19,12 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
     neg_dist = float(distance[1])
     return max(pos_dist - neg_dist + margin, 0)
 
+# t is a tensor with dimensions N x 1000, return a tensor with dimensions N x 50
+def dim_reduce(t):
+    m = AvgPool1d(200)	
+    t = m(t.unsqueeze(1))
+    return t.squeeze()
+
 def train(epochs, data_loaders):
 
     model = models.alexnet(pretrained=True)
@@ -27,7 +33,6 @@ def train(epochs, data_loaders):
 
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-    m = AvgPool1d(200)
 
     # Train the models
     for epoch in range(1,epochs+1):
@@ -44,8 +49,7 @@ def train(epochs, data_loaders):
             optimizer.zero_grad()
             outputs = model(inputs)
             print(f'Output before size: {outputs.size()}')
-            outputs = outputs.unsqueeze(0)
-            outputs = m(outputs)
+            outputs = dim_reduce(outputs)
             print(f'Output after size: {outputs.size()}')
             break
         
