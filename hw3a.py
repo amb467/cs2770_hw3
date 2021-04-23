@@ -21,7 +21,7 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
 
 # t is a tensor with dimensions N x 1000, return a tensor with dimensions N x 50
 def dim_reduce(t):
-    m = AvgPool1d(200)	
+    m = AvgPool1d(20)	
     t = m(t.unsqueeze(1))
     return t.squeeze()
 
