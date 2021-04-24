@@ -1,5 +1,5 @@
 import argparse, gensim, gensim.downloader
-import os, math, nltk
+import json, os, math, nltk
 import pandas as pd, pathlib, pickle
 import random, requests, numpy as np, torch
 import torchvision.transforms as transforms
@@ -35,7 +35,10 @@ class ImageDataset(data.Dataset):
     
     # Return the vector for the token or the mean vector if the token is unknown   
     def _get_token_vec(self, token):
-        return self.vocab[token] if token in self.vocab else self.vocab_mean
+        try:
+            return self.vocab.loc(token).to_numpy
+        except KeyError:
+            return self.vocab_mean
     
     # Return the image and caption at the index    
     def __getitem__(self, index):
@@ -79,22 +82,27 @@ def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
                                               num_workers=num_workers)
     return data_loaders
 
-# Create data files for the training, validation, and test sets for each image data set
-def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=1000):
-    train_val_proportion = 0.08
+def create_splits(id_list, max_images, train_val_proportion=0.08):
     data_sets = defaultdict(list)
-    coco = COCO(img_data_file)
-    data_sets['train'] = list(coco.anns.keys())
-    random.shuffle(data_sets['train'])
+    random.shuffle(id_list)
     
     if max_images is not None:
-    	data_sets['train'] = data_sets['train'][:max_images]
- 	
-    train_val_size = math.floor(train_val_proportion * len(data_sets['train']))
+        id_list = id_list[:max_images]
+    
+    train_val_size = math.floor(train_val_proportion * len(id_list))
     
     for i in range(train_val_size):
-        data_sets['val'].append(data_sets['train'].pop())
-        data_sets['test'].append(data_sets['train'].pop())
+        data_sets['val'].append(id_list.pop())
+        data_sets['test'].append(id_list.pop())
+    
+    data_sets['train'] = id_list
+    return data_sets
+        
+# Create data objects for the training, validation, and test sets for each image data set
+def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
+    coco = COCO(img_data_file)
+    id_list = list(coco.anns.keys())
+    data_sets = create_splits(id_list, max_images)
     
     coco_ds = {}
     for ds, ids in data_sets.items():
@@ -109,6 +117,56 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=1000):
     pickle.dump(coco_ds, open(output_file, 'wb'))
     print('Done with outputting')
 
+# For the Good News corpus, download files and create data objects for training, validation, and test sets
+def create_good_news_image_sets(img_dir, url_data_file, caption_data_file, output_dir, max_images=5000):
+
+    # Create a directory to save the image files if it doesn't exist
+    if not os.path.exists(img_dir):
+        os.makedirs(img_dir)
+    
+    # Open and read the caption data file  
+    with open(caption_data_file, "rb") as f:
+        captioning_dataset = json.load(f)
+
+    img_id_to_caption = {}
+    for k, anns in captioning_dataset.items():
+        for ix, caption in anns['images'].items():
+            img_id = f'{k}_{ix}'
+            img_id_to_caption[img_id] = caption
+
+    # Create train, validation, and test splits
+    id_list = list(img_id_to_caption.keys())
+    data_sets = create_splits(id_list, max_images)
+
+    news_ds = {}
+    for ds, ids in data_Sets.items():
+        news_ds[ds] = {}
+        news_ds[ds]['image-ids'] = ids
+        news_ds[ds]['captions'] = [img_id_to_caption[i] for i in ids]
+    
+    # Open and read the image url data file
+    with open(url_data_file, "rb") as f:
+        url_dataset = json.load(f)
+    
+    img_id_to_url = {}
+    for k, anns in url_dataset.items():
+        for ix, url in anns.items():
+            img_id = f'{k}_{ix}'
+            if img_id in id_list:
+                img_id_to_url[img_id] = url
+    
+    # For each image in the training, validation, and test set, download the image file
+    for ds, ids in data_Sets.items():
+        urls = [img_id_to_url[i] for i in ids]
+        image_paths = [os.path.join(img_dir, i) for i in ids]
+        news_ds[ds]['image-paths'] = image_paths
+        
+        for img_url, img_file_path in zip(urls, image_paths):
+            r = requests.get(img_url)
+        
+            with open(img_file_path,'wb') as f:
+                f.write(r.content)      
+    
 # Normalize embeddings and use PCA to reduce dimensions to 50        
 def normalize_reduce(embeddings):
     # Normalize the embeddings
