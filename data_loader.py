@@ -107,6 +107,7 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=1000):
     output_file = os.path.join(output_dir, IMAGE_DATA_SET['coco'])
     print(f'Outputting COCO data sets as: {output_file}')
     pickle.dump(coco_ds, open(output_file, 'wb'))
+    print('Done with outputting')
 
 # Normalize embeddings and use PCA to reduce dimensions to 50        
 def normalize_reduce(embeddings):
