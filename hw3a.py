@@ -40,7 +40,7 @@ def triplet_loss_batch(outputs, targets):
 		while n == i:
 			n = random.randrange(l)
 		
-		losses.append(Variable(triplet_loss(output, target, target_list[n]), requires_grad=True))
+		losses.append(triplet_loss(output, target, target_list[n]))
 	
 	return torch.Tensor(losses)
 		
