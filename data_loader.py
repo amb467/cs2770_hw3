@@ -15,13 +15,17 @@ EMBEDDING_FILE = {
     'word2vec': 'word2vec.pkl'
 }
 
+IMAGE_DATA_SET = {
+    'coco': 'coco.pkl',
+    'news': 'news.pkl'
+}
+
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
-    def __init__(self, root, coco, ids, vocab):
+    def __init__(self, root, coco, ids):
         self.root = root
         self.coco = coco
         self.ids = ids
-        self.vocab = vocab
         self.transform = data_transforms = transforms.Compose([
             transforms.Resize((224,224)),
             transforms.ToTensor(),
@@ -29,6 +33,9 @@ class CocoDataset(data.Dataset):
         ])
         self.vocab_mean = np.zeros(50)
 
+    def set_vocab(vocab):
+        self.vocab = vocab
+        
     def _get_token_vec(self, token):
         return self.vocab[token] if token in self.vocab else self.vocab_mean
         
@@ -55,9 +62,24 @@ class CocoDataset(data.Dataset):
 
 # Create and return data loaders for train, validation, and test for the specified
 # word embeddings and the specified image data set
-def get_loaders(root, img_data_file, data_dir, embedding, batch_size, num_workers):
+def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
+    
+    # Open datasets
+    datasets = pickle.load(os.path.join(data_dir, open(IMAGE_DATA_SET[img_data_set], 'rb')))
+    # Open embedding
+    vocab = pickle.load(os.path.join(data_dir, open(EMBEDDING_FILE[embedding], 'rb')))
+    
+    data_loaders = {}
+    for ds in ['train', 'val', 'test']:
+        datasets[ds].set_vocab(vocab)
+        data_loaders[ds] = torch.utils.data.DataLoader(dataset=datasets[ds], 
+                                              batch_size=batch_size,
+                                              shuffle=True,
+                                              num_workers=num_workers)
+    return data_loaders
 
-    # Divide the data set up in training, validation, and test sets
+# Create data files for the training, validation, and test sets for each image data set
+def create_coco_image_sets(img_dir, img_data_file, output_dir):
     train_val_proportion = 0.08
     data_sets = defaultdict(list)
     coco = COCO(img_data_file)
@@ -69,19 +91,14 @@ def get_loaders(root, img_data_file, data_dir, embedding, batch_size, num_worker
         data_sets['val'].append(data_sets['train'].pop())
         data_sets['test'].append(data_sets['train'].pop())
     
-    # Create an embedding dictionary
-    vocab = pickle.load(os.path.join(data_dir, open(EMBEDDING_FILE[embedding], 'rb')))
-    
-    data_loaders = {}
+    coco_ds = {}
     for ds, ids in data_sets.items():
-        coco_ds =  CocoDataset(root, coco, ids, vocab)
-        coco_ds.__getitem__(5)
-        data_loaders[ds] = torch.utils.data.DataLoader(dataset=coco_ds, 
-                                              batch_size=batch_size,
-                                              shuffle=True,
-                                              num_workers=num_workers)
-    return data_loaders
-
+        coco_ds[ds] =  CocoDataset(img_dir, coco, ids)
+        
+    output_file = os.path.join(output_dir, IMAGE_DATA_SET['coco'])
+    print(f'Outputting COCO data sets as: {output_file}')
+    pickle.dump(coco_ds, output_file)
+        
 def normalize_reduce(embeddings):
     # Normalize the embeddings
     scaler = StandardScaler()
@@ -95,7 +112,7 @@ def normalize_reduce(embeddings):
     
     return embeddings
 
-# Create and pickle the embedding.  This includes normalizing and, if necessary, using PCA to 
+# Create and pickle GloVe and Word2Vec embeddinsg.  This includes normalizing using PCA to 
 # reduce the dimensions to 50
 def prepare_embeddings(embedding_file, output_dir):
 
@@ -135,6 +152,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='CS2770 HW3 Data Preparation')
     parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
     parser.add_argument('--glove_embedding', type=pathlib.Path, help='The GloVe embedding file')
+    parser.add_argument('--image_dir', type=pathlib.Path, help='Directory with image files')
+    parser.add_argument('--image_data_file', type=pathlib.Path, help='JSON file with image data')
     args = parser.parse_args()
     
     if not os.path.exists(args.output_dir):
@@ -143,4 +162,5 @@ if __name__ == "__main__":
     if args.glove_embedding is not None:
         prepare_embeddings(args.glove_embedding, args.output_dir)
    
-    
+   	if args.image_directory is not None:
+   		create_coco_image_sets(args.image_dir, args.image_data_file, args.output_dir):   

@@ -47,9 +47,9 @@ def train(epochs, model, data_loaders, model_path):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-	best_model_wts = None
-	best_acc = 0.0
-	
+    best_model_wts = None
+    best_acc = 0.0
+    
     # Train the models
     for epoch in range(1,epochs+1):
         print(f'Epoch {epoch} of {epochs}')
@@ -76,9 +76,9 @@ def train(epochs, model, data_loaders, model_path):
 
         image_to_text, text_to_image = get_test_results(model, data_loaders['val'])
         if image_to_text > best_acc:
-        	best_acc = image_to_text
-        	best_model_wts = copy.deepcopy(model.state_dict())
-			torch.save(best_model_wts, model_path)
+            best_acc = image_to_text
+            best_model_wts = copy.deepcopy(model.state_dict())
+            torch.save(best_model_wts, model_path)
         
 def get_test_results(model, data_loader):
 
@@ -95,11 +95,11 @@ def get_test_results(model, data_loader):
         
         values, indices = torch.min(distances, 0)
         for n, i in enumerate(indices):
-        	image_to_text.append(1.0 if n == int(i) else 0.0)
+            image_to_text.append(1.0 if n == int(i) else 0.0)
 
-		values, indices = torch.min(distances, 1)
+        values, indices = torch.min(distances, 1)
         for n, i in enumerate(indices):
-        	text_to_image.append(1.0 if n == int(i) else 0.0)        
+            text_to_image.append(1.0 if n == int(i) else 0.0)        
         
     image_to_text = sum(image_to_text) / float(len(image_to_text))
     text_to_image = sum(text_to_image) / float(len(text_to_image)) 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     # Create data loaders
     batch_size = 128
     num_workers = 2
-    data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, batch_size, num_workers)
+    data_loaders = get_loaders(args.data_dir, 'coco', 'glove', batch_size, num_workers)
     
     # Train
     model = models.alexnet(pretrained=True)
