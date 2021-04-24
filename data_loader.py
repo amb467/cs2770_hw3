@@ -125,7 +125,7 @@ def prepare_embeddings2(embedding_file, output_dir):
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec']) 
     pickle.dump(word2vec_embeddings, open(output_file, 'wb')) 
     
-def prepare_embeddings2(embedding_file, output_dir):
+def prepare_embeddings(embedding_file, output_dir):
   
     w2v = gensim.downloader.load('word2vec-google-news-300')
     vector = w2v.wv.vocab
