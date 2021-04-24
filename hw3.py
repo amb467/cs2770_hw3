@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # Training
     print(f'Training with model {args.model}, image data set {args.image_data_set[0]}, embedding {args.embedding[0]}')
     train_data_loaders = get_loaders(args.data_dir, args.image_data_set[0], args.embedding[0], batch_size, num_workers)
-    train(model, args.epochs, train_data_loaders, model_path)
+    train(args.epochs, model, train_data_loaders, model_path)
     
     # Testing
     print(f'Testing with model {args.model}, image data set {args.image_data_set[-1]}, embedding {args.embedding[-1]}')
