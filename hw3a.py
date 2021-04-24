@@ -47,7 +47,8 @@ def triplet_loss_batch(criterion, outputs, targets):
 # Make a complete derangement of tensor t
 def make_derangement(t):
 
-    t_list = [float(i) for i in list(t)]
+    t_list = list(t)
+    
     new_indices = []
     indices = [0]
 
