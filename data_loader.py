@@ -120,7 +120,7 @@ def prepare_embeddings(embedding_file, output_dir):
     # Reading w2v embeddings
     print('Reading Word2Vec embeddings...')
     w2v = gensim.downloader.load('word2vec-google-news-300')
-    words = list(w2v.vocab)
+    words = set(w2v.vocab).intersection(set(words))
     embeddings = [w2v[word] for word in words]
     print(f'Creating dataframe')
     w2v_embeddings = pd.DataFrame(embeddings, index=words)
