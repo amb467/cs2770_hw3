@@ -10,8 +10,10 @@ from pycocotools.coco import COCO
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-GLOVE_OUTPUT_FILE = 'glove.pkl'
-WORD2VEC_OUTPUT_FILE = 'word2vec.pkl'
+EMBEDDING_FILE = {
+    'glove': 'glove.pkl',
+    'word2vec': 'word2vec.pkl'
+}
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
@@ -53,7 +55,7 @@ class CocoDataset(data.Dataset):
 
 # Create and return data loaders for train, validation, and test for the specified
 # word embeddings and the specified image data set
-def get_loaders(root, img_data_file, embedding_file, batch_size, num_workers):
+def get_loaders(root, img_data_file, data_dir, embedding, batch_size, num_workers):
 
     # Divide the data set up in training, validation, and test sets
     train_val_proportion = 0.08
@@ -68,7 +70,7 @@ def get_loaders(root, img_data_file, embedding_file, batch_size, num_workers):
         data_sets['test'].append(data_sets['train'].pop())
     
     # Create an embedding dictionary
-    vocab = pickle.load(open(embedding_file, 'rb'))
+    vocab = pickle.load(os.path.join(data_dir, open(EMBEDDING_FILE[embedding], 'rb')))
     
     data_loaders = {}
     for ds, ids in data_sets.items():
@@ -95,7 +97,7 @@ def normalize_reduce(embeddings):
 
 # Create and pickle the embedding.  This includes normalizing and, if necessary, using PCA to 
 # reduce the dimensions to 50
-def prepare_embeddings(embedding_file, output_dir):
+def prepare_embeddings2(embedding_file, output_dir):
 
     # Read in embeddings
     words = []
@@ -117,11 +119,17 @@ def prepare_embeddings(embedding_file, output_dir):
     word2vec_embeddings = normalize_reduce(word2vec_embeddings)
     
     # Output
-    output_file = os.path.join(args.output_dir, GLOVE_OUTPUT_FILE) 
+    output_file = os.path.join(args.output_dir, EMBEDDING_FILE['glove']) 
     pickle.dump(glove_embeddings, open(output_file, 'wb'))
 
-    output_file = os.path.join(args.output_dir, WORD2VEC_OUTPUT_FILE) 
-    pickle.dump(word2vec_embeddings, open(output_file, 'wb'))    
+    output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec']) 
+    pickle.dump(word2vec_embeddings, open(output_file, 'wb')) 
+    
+def prepare_embeddings2(embedding_file, output_dir):
+  
+    w2v = gensim.downloader.load('word2vec-google-news-300')
+    vector = w2v.wv.vocab
+    print(f'Vector type is {type(vector)}')  
     
 if __name__ == "__main__":
 
@@ -134,6 +142,6 @@ if __name__ == "__main__":
         os.makedirs(args.output_dir)
     
     if args.glove_embedding is not None:
-    	prepare_embeddings(args.glove_embedding, args.output_dir)
+        prepare_embeddings(args.glove_embedding, args.output_dir)
    
     
