@@ -96,7 +96,7 @@ def create_splits(id_list, max_images, train_val_proportion=0.08):
     return data_sets
         
 # Create data objects for the training, validation, and test sets for each image data set
-def create_coco_image_sets(img_dir, img_data_file, output_dir, , max_images=5000):
+def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
     coco = COCO(img_data_file)
     id_list = list(coco.anns.keys())
     data_sets = create_splits(id_list, max_images)
