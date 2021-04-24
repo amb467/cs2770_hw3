@@ -71,20 +71,20 @@ def train(epochs, data_loaders):
     
         scheduler.step()
 
-		get_rest_results(model, data_loaders['val'])
-		
+        get_rest_results(model, data_loaders['val'])
+        
     
 def get_test_results(model, data_loader):
 
-	model.eval()
-	
-	for inputs, targets in data_loaders:
-		inputs = inputs.to(device)
-		targets = targets.to(device)
-		outputs = dim_reduce(model(inputs))
-		distances = torch.cdist(targets, outputs)
-		values, indices = torch.max(distances, 0)
-		print(f'Size of indices is {indices.size()}')
+    model.eval()
+    
+    for inputs, targets in data_loaders:
+        inputs = inputs.to(device)
+        targets = targets.to(device)
+        outputs = dim_reduce(model(inputs))
+        distances = torch.cdist(targets, outputs)
+        values, indices = torch.max(distances, 0)
+        print(f'Size of indices is {indices.size()}')
     
 if __name__ == "__main__":
 
