@@ -53,8 +53,9 @@ def train(epochs, data_loaders):
         print(f'Epoch {epoch} of {epochs}')
     
         model.train()
-    
-        for inputs, targets in data_loaders['train']:
+    	
+        for i, (inputs, targets) in enumerate(data_loaders['train']):
+        	print(f"Training batch {i} of {len(data_loaders['train'])}")
         
             # Set mini-batch dataset
             inputs = inputs.to(device)
@@ -78,7 +79,8 @@ def get_test_results(model, data_loader):
 
     model.eval()
     
-    for inputs, targets in data_loaders:
+    for i, (inputs, targets) in enumerate(data_loader):
+    	print(f"Validating batch {i} of {len(data_loader)}")
         inputs = inputs.to(device)
         targets = targets.to(device)
         outputs = dim_reduce(model(inputs))
