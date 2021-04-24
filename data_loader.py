@@ -53,7 +53,7 @@ class ImageDataset(data.Dataset):
         return image, target
 
     def __len__(self):
-        return len(self.ids)
+        return len(self.image_ids)
 
 # Create and return data loaders for train, validation, and test for the specified
 # word embeddings and the specified image data set
