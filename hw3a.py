@@ -93,6 +93,7 @@ def train(epochs, data_loaders):
     
             # Make a derangement of targets so the negative is always different from positive
             negatives = make_derangement(targets)
+            print(f'Sizes of anchor {inputs.size()}; positive {targets.size()}; negative {negatives.size()}')
             loss = criterion(inputs, targets, negatives)
             loss.backward()
             optimizer.step()
