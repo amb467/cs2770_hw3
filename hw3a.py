@@ -1,4 +1,4 @@
-import argparse, os, pathlib, torch
+import argparse, os, pathlib, random, torch
 import torch.optim as optim
 import torchvision.models as models
 from torch.nn import AvgPool1d
@@ -10,6 +10,12 @@ from torchsummary import summary
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+# t is a tensor with dimensions N x 1000, return a tensor with dimensions N x 50
+def dim_reduce(t):
+    m = AvgPool1d(20)	
+    t = m(t.unsqueeze(1))
+    return t.squeeze()
+    
 # Calculate triplet loss for the given anchor, positive, and negative tensors
 def triplet_loss(anchor, positive, negative, margin=0.5):
     x1 = anchor.unsqueeze(0)
@@ -19,12 +25,24 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
     neg_dist = float(distance[1])
     return max(pos_dist - neg_dist + margin, 0)
 
-# t is a tensor with dimensions N x 1000, return a tensor with dimensions N x 50
-def dim_reduce(t):
-    m = AvgPool1d(20)	
-    t = m(t.unsqueeze(1))
-    return t.squeeze()
+# For each output and each target, calculate the triplet loss from the target and a negative
+# sample.  Return the average loss
+def triplet_loss_batch(outputs, targets):
 
+	output_list = list(outputs)
+	target_list = list(targets)
+	l = len(output_list)
+	losses = 0.0
+	
+	for i, (output, target) in enumerate(zip(output_list, target_list)):
+		n = random.randrange(l)
+		while n == i:
+			n = random.randrange(l)
+		
+		losses += triplet_loss(output, target, target_list[n])
+	
+	return losses / float(l)
+		
 def train(epochs, data_loaders):
 
     model = models.alexnet(pretrained=True)
@@ -47,15 +65,11 @@ def train(epochs, data_loaders):
             targets = targets.to(device)
 
             optimizer.zero_grad()
-            outputs = model(inputs)
-            print(f'Output before size: {outputs.size()}')
-            outputs = dim_reduce(outputs)
-            print(f'Output after size: {outputs.size()}')
-            break
-        
-            #loss = triplet_loss(outputs, targets)
-            #loss.backward()
-            #optimizer.step()
+            outputs = dim_reduce(model(inputs))
+    
+            loss = triplet_loss_batch(outputs, targets)
+            loss.backward()
+            optimizer.step()
     
         scheduler.step()
     
