@@ -1,4 +1,4 @@
-import os, math, nltk, random, requests, pickle, numpy as np, torch
+import argparse, os, math, nltk, random, requests, pickle, numpy as np, torch
 import torchvision.transforms as transforms
 import torch.utils.data as data
 from collections import defaultdict
@@ -6,6 +6,8 @@ from PIL import Image
 from pycocotools.coco import COCO
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+
+GLOVE_OUTPUT_FILE = 'glove.pkl'
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
@@ -113,10 +115,14 @@ def prepare_embedding(embedding_file, output_file):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='CS2770 HW3 Data Preparation')
-    parser.add_argument('--embedding_file', type=pathlib.Path, help='The embedding file')
-    parser.add_argument('--output_file', type=pathlib.Path, help='Output')
+    parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
+    parser.add_argument('--glove_embedding', type=pathlib.Path, help='The GloVe embedding file')
     args = parser.parse_args()
     
-    prepare_embedding(args.embeding_file, args.output_file)
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+    
+    output_file = os.path.join(args.output_dir, GLOVE_OUTPUT_FILE) 
+    prepare_embedding(args.glove_embedding, output_file)
    
     
