@@ -200,9 +200,10 @@ def prepare_embeddings(embedding_file, output_dir):
             words.append(values[0])
             glove_embeddings.append(np.asarray(values[1:], "float32"))
        
-    glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
+    glove_embeddings = pd.DataFrame(glove_embeddings)
     glove_embeddings = normalize_reduce(glove_embeddings)
-    print(f'GloVe embeddings have type {type(glove_embeddings)} and size {glove_embeddings.size} and shape {glove_embeddings.shape}')
+    glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
+    print(f'GloVe embeddings have type {type(glove_embeddings)}')
     
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['glove'])
     print(f'Outputting GloVe embeddings to file {output_file}')
@@ -213,9 +214,10 @@ def prepare_embeddings(embedding_file, output_dir):
     w2v = gensim.downloader.load('word2vec-google-news-300')
     words = set(w2v.vocab).intersection(set(words))
     embeddings = [w2v[word] for word in words]
-    w2v_embeddings = pd.DataFrame(embeddings, index=words)
+    w2v_embeddings = pd.DataFrame(embeddings)
     #w2v_embeddings = pd.DataFrame.from_dict(w2v_embeddings.wv)
     w2v_embeddings = normalize_reduce(w2v_embeddings)
+    w2v_embeddings = pd.DataFrame(embeddings, index=words)
 
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec'])
     print(f'Outputting Word2Vec embeddings to file {output_file}')

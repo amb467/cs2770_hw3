@@ -102,7 +102,7 @@ def get_test_results(model, data_loader):
             text_to_image.append(1.0 if n == int(i) else 0.0)        
         
     image_to_text = sum(image_to_text) / float(len(image_to_text))
-    text_to_image = sum(text_to_image) / float(len(text_to_image)) 
+    text_to_image = sum(text_to_image) / float(len(text_to_image))
     return image_to_text, text_to_image
     
 if __name__ == "__main__":
