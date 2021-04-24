@@ -136,7 +136,7 @@ if __name__ == "__main__":
         raise Exception('Only two embedding arguments are allowed, found {len(args.embedding)}')
     for e in embedding:
         if not (e == 'glove' or e == 'w2v'):
-            raise Exception('Only "glove" and "w2v" are acceptable as embeddings, found {e}'   
+            raise Exception('Only "glove" and "w2v" are acceptable as embeddings, found {e}') 
     
     # Create parameters and model
     model_path = os.path.join(args.output_dir, 'part_a_best_model_weight.pth')
