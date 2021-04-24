@@ -107,30 +107,51 @@ def get_test_results(model, data_loader):
     
 if __name__ == "__main__":
 
+    # Get arguments
     parser = argparse.ArgumentParser(description='CS2770 HW3')
     parser.add_argument('--epochs', type=int, default=25, help='The number of epochs')
-    parser.add_argument('--data_dir', type=pathlib.Path, help='The data set to use for training, testing, and validation')
-    parser.add_argument('--json_file', type=pathlib.Path, help='The json file with data set captions')
-    parser.add_argument('--embedding_file', type=pathlib.Path, help='The embedding file')
+    parser.add_argument('--model', type=str, default='alex', help='The type of CNN to use, either "alex" for AlexNet or "res" for Resnet18')
+    parser.add_argument('--data_dir', type=pathlib.Path, help='The directory where image and embedding pickle files can be found')
     parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
+    parser.add_argument('--image_data_set', nargs="+", type=str, help='The image data set(s) to use.  Must be "coco" or "news". If two are provided, the first will be used for training and the second for evaluation')
+    parser.add_argument('--embedding', nargs="+", type=str, help='The word embedding to use.  Must be "glove" or "w2v". If two are provided, the first will be used for training and the second for evaluation')
     args = parser.parse_args()
-
-    # Create directories
+    
+    # Validate arguments
+    if not (args.model == "alex" or args.model == "res"):
+        raise Exception('Expected "alex" or "res" as model, found {args.model}')
+        
     if not os.path.exists(args.data_dir):
-        os.makedirs(args.data_dir)
+        raise Exception('Not a valid path to find image and embedding pickle files: {args.data_dir}')
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     
-    model_path = os.path.join(args.output_dir, 'part_a_best_model_weight.pth') 
-    # Create data loaders
+    if len(args.image_data_set) > 2:
+        raise Exception('Only two image data set arguments are allowed, found {len(args.image_data_set)}')
+    for img_data_set in args.image_data_set:
+        if not (img_data_set == 'coco' or img_data_set == 'news'):
+            raise Exception('Only "coco" and "news" are acceptable as image data sets, found {img_data_set}'
+
+    if len(args.embedding) > 2:
+        raise Exception('Only two embedding arguments are allowed, found {len(args.embedding)}')
+    for e in embedding:
+        if not (e == 'glove' or e == 'w2v'):
+            raise Exception('Only "glove" and "w2v" are acceptable as embeddings, found {e}'   
+    
+    # Create parameters and model
+    model_path = os.path.join(args.output_dir, 'part_a_best_model_weight.pth')
     batch_size = 128
     num_workers = 2
-    data_loaders = get_loaders(args.data_dir, 'coco', 'glove', batch_size, num_workers)
+    model = models.alexnet(pretrained=True) if args.model == "alex" else None
     
-    # Train
-    model = models.alexnet(pretrained=True)
-    train(model, args.epochs, data_loaders, model_path)
+    # Training
+    print(f'Training with model {args.model}, image data set {args.image_data_set[0]}, embedding {args.embedding[0]}')
+    train_data_loaders = get_loaders(args.data_dir, args.image_data_set[0], args.embedding[0], batch_size, num_workers)
+    train(model, args.epochs, train_data_loaders, model_path)
     
+    # Testing
+    print(f'Testing with model {args.model}, image data set {args.image_data_set[-1]}, embedding {args.embedding[-1]}')
+    test_data_loaders = get_loaders(args.data_dir, args.image_data_set[-1], args.embedding[-1], batch_size, num_workers)
     model.load_state_dict(torch.load(model_path))
-    image_to_text, text_to_image = get_test_results(model, data_loaders['test'])
+    image_to_text, text_to_image = get_test_results(model, test_data_loaders['test'])
     print(f'Model accuracy: image-to-text {image_to_text}; text-to-image {text_to_image}') 
