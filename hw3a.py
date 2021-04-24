@@ -16,34 +16,6 @@ def dim_reduce(t):
     t = m(t.unsqueeze(1))
     return t.squeeze()
  
-""" 
-# Calculate triplet loss for the given anchor, positive, and negative tensors
-def triplet_loss(anchor, positive, negative, margin=0.5):
-    x1 = anchor.unsqueeze(0)
-    x2 = torch.stack([positive, negative], 0)
-    distance = torch.cdist(x1, x2).tolist()[0]
-    pos_dist = float(distance[0])
-    neg_dist = float(distance[1])
-    return max(pos_dist - neg_dist + margin, 0)
-    
-# For each output and each target, calculate the triplet loss from the target and a negative
-# sample.  Return the average loss
-def triplet_loss_batch(criterion, outputs, targets):
-    output_list = list(outputs)
-    target_list = list(targets)
-    l = len(output_list)
-    losses = []
-        
-    for i, (output, target) in enumerate(zip(output_list, target_list)):
-        n = random.randrange(l)
-        while n == i:
-            n = random.randrange(l)
-        
-        losses.append(triplet_loss(output, target, target_list[n]))
-    
-    return torch.tensor(losses, requires_grad = True)
-"""
-
 # Make a complete derangement of tensor t
 def make_derangement(t):
 
@@ -65,7 +37,7 @@ def make_derangement(t):
 
     new_list = [t_list[i] for i in new_indices]
     return torch.stack(new_list, 0)
-    
+   
 def train(epochs, data_loaders):
 
     model = models.alexnet(pretrained=True)
@@ -98,6 +70,21 @@ def train(epochs, data_loaders):
             optimizer.step()
     
         scheduler.step()
+
+		get_rest_results(model, data_loaders['val'])
+		
+    
+def get_test_results(model, data_loader):
+
+	model.eval()
+	
+	for inputs, targets in data_loaders:
+		inputs = inputs.to(device)
+		targets = targets.to(device)
+		outputs = dim_reduce(model(inputs))
+		distances = torch.cdist(targets, outputs)
+		values, indices = torch.max(distances, 0)
+		print(f'Size of indices is {indices.size()}')
     
 if __name__ == "__main__":
 
@@ -116,8 +103,7 @@ if __name__ == "__main__":
         os.makedirs(args.output_dir)
     
     # Create data loaders
-    #batch_size = 128
-    batch_size = 5
+    batch_size = 128
     num_workers = 2
     data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, batch_size, num_workers)
     
