@@ -1,4 +1,4 @@
-import argparse, os, pathlib, random, torch
+import argparse, copy, os, pathlib, random, torch
 import torch.optim as optim
 import torchvision.models as models
 from torch.nn import AvgPool1d, TripletMarginLoss
@@ -38,9 +38,8 @@ def make_derangement(t):
     new_list = [t_list[i] for i in new_indices]
     return torch.stack(new_list, 0)
    
-def train(epochs, data_loaders):
+def train(epochs, model, data_loaders, model_path):
 
-    model = models.alexnet(pretrained=True)
     model.to(device)
     #summary(model, (3, 299, 299))
 
@@ -48,6 +47,9 @@ def train(epochs, data_loaders):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
+	best_model_wts = None
+	best_acc = 0.0
+	
     # Train the models
     for epoch in range(1,epochs+1):
         print(f'Epoch {epoch} of {epochs}')
@@ -69,16 +71,20 @@ def train(epochs, data_loaders):
             loss = criterion(outputs, targets, negatives)
             loss.backward()
             optimizer.step()
-            break
     
         scheduler.step()
 
-        get_test_results(model, data_loaders['val'])
+        image_to_text, text_to_image = get_test_results(model, data_loaders['val'])
+        if image_to_text > best_acc:
+        	best_acc = image_to_text
+        	best_model_wts = copy.deepcopy(model.state_dict())
+			torch.save(best_model_wts, model_path)
         
-    
 def get_test_results(model, data_loader):
 
     model.eval()
+    image_to_text = []
+    text_to_image = []
     
     for i, (inputs, targets) in enumerate(data_loader):
         print(f"Validating batch {i} of {len(data_loader)}")
@@ -86,9 +92,18 @@ def get_test_results(model, data_loader):
         targets = targets.to(device)
         outputs = dim_reduce(model(inputs))
         distances = torch.cdist(targets, outputs)
-        values, indices = torch.max(distances, 0)
-        print(f'Size of indices is {indices.size()}')
-        break
+        
+        values, indices = torch.min(distances, 0)
+        for n, i in enumerate(indices):
+        	image_to_text.append(1.0 if n == int(i) else 0.0)
+
+		values, indices = torch.min(distances, 1)
+        for n, i in enumerate(indices):
+        	text_to_image.append(1.0 if n == int(i) else 0.0)        
+        
+    image_to_text = sum(image_to_text) / float(len(image_to_text))
+    text_to_image = sum(text_to_image) / float(len(text_to_image)) 
+    return image_to_text, text_to_image
     
 if __name__ == "__main__":
 
@@ -106,12 +121,16 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     
+    model_path = os.path.join(args.output_dir, 'part_a_best_model_weight.pth') 
     # Create data loaders
     batch_size = 128
     num_workers = 2
     data_loaders = get_loaders(args.data_dir, args.json_file, args.embedding_file, batch_size, num_workers)
     
     # Train
-    train(args.epochs, data_loaders)
+    model = models.alexnet(pretrained=True)
+    train(model, args.epochs, data_loaders, model_path)
     
-    
+    model.load_state_dict(torch.load(model_path))
+    image_to_text, text_to_image = get_test_results(model, data_loaders['test'])
+    print(f'Model accuracy: image-to-text {image_to_text}; text-to-image {text_to_image}') 
