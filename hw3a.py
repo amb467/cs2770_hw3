@@ -32,16 +32,16 @@ def triplet_loss_batch(outputs, targets):
 	output_list = list(outputs)
 	target_list = list(targets)
 	l = len(output_list)
-	losses = 0.0
+	losses = []
 	
 	for i, (output, target) in enumerate(zip(output_list, target_list)):
 		n = random.randrange(l)
 		while n == i:
 			n = random.randrange(l)
 		
-		losses += triplet_loss(output, target, target_list[n])
+		losses.append(triplet_loss(output, target, target_list[n]))
 	
-	return losses / float(l)
+	return torch.Tensor(losses)
 		
 def train(epochs, data_loaders):
 
