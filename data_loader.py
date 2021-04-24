@@ -126,7 +126,6 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
         for line in f.readlines():
             row = line.split('\t')
             if len(row) < 3:
-                print(f'Invalid row with size {len(row)}: {line}')
                 continue
             img_id = row[0]
             caption = row[1]
@@ -147,14 +146,13 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
         news_ds[ds]['captions'] = [file_data[i]['caption'] for i in ids]
         
         urls = [file_data[i]['img_url'] for i in ids]
-        image_paths = [os.path.join(img_dir, i) for i in ids]
+        image_paths = [os.path.join(img_dir, f'{i}.jpg') for i in ids]
         news_ds[ds]['image-paths'] = image_paths
                 
         for img_url, img_file_path in zip(urls, image_paths):
-            r = requests.get(img_url)
-        
+            img_data = requests.get(img_url, stream=True).content        
             with open(img_file_path,'wb') as f:
-                f.write(r.content)
+                f.write(img_data)
     
     # Output the data objects for each split
     output_file = os.path.join(output_dir, IMAGE_DATA_SET['news'])
