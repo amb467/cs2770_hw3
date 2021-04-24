@@ -120,8 +120,8 @@ def prepare_embeddings(embedding_file, output_dir):
     # Reading w2v embeddings
     print('Reading Word2Vec embeddings...')
     w2v = gensim.downloader.load('word2vec-google-news-300')
-    words = list(w2v.wv.vocab)
-    w2v_embeddings = [w2v.wv[word] for word in words]
+    words = list(w2v.vocab)
+    w2v_embeddings = [w2v[word] for word in words]
     w2v_embeddings = pd.DataFrame(w2v_embeddings, index=words)
     #w2v_embeddings = pd.DataFrame.from_dict(w2v_embeddings.wv)
     w2v_embeddings = normalize_reduce(w2v_embeddings)
