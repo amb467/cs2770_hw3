@@ -1,9 +1,11 @@
-import os, math, nltk, random, requests, numpy as np, torch
+import os, math, nltk, random, requests, pickle, numpy as np, torch
 import torchvision.transforms as transforms
 import torch.utils.data as data
 from collections import defaultdict
 from PIL import Image
 from pycocotools.coco import COCO
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
@@ -43,12 +45,14 @@ class CocoDataset(data.Dataset):
     def __len__(self):
         return len(self.ids)
 
-def get_loaders(root, json_file, embedding_file, batch_size, num_workers):
+# Create and return data loaders for train, validation, and test for the specified
+# word embeddings and the specified image data set
+def get_loaders(root, img_data_file, embedding_file, batch_size, num_workers):
 
     # Divide the data set up in training, validation, and test sets
     train_val_proportion = 0.08
     data_sets = defaultdict(list)
-    coco = COCO(json_file)
+    coco = COCO(img_data_file)
     data_sets['train'] = list(coco.anns.keys())
     random.shuffle(data_sets['train'])
     train_val_size = math.floor(train_val_proportion * len(data_sets['train']))
@@ -75,3 +79,44 @@ def get_loaders(root, json_file, embedding_file, batch_size, num_workers):
                                               shuffle=True,
                                               num_workers=num_workers)
     return data_loaders
+
+# Create and pickle the embedding.  This includes normalizing and, if necessary, using PCA to 
+# reduce the dimensions to 50
+def prepare_embedding(embedding_file, output_file):
+    words = []
+    embeddings = []
+    
+    with open(embedding_file, 'r') as f:
+        for line in f:
+            values = line.split()
+            words.append(values[0])
+            embeddings.append(np.asarray(values[1:], "float32"))
+           
+    #embeddings.append(np.mean(embeddings, axis=0))
+    #words.append('<UNK>')
+    
+    # Normalize the embeddings
+    scaler = StandardScaler()
+    scaler.fit(embeddings)
+    print(scalar.get_params())
+    #pickle.dump(scaler, open(scaler_file, 'wb'))
+    #embeddings = scaler.transform(embeddings)
+
+    # Reduce dimensions using PCA
+    #pca = PCA(n_components=k)
+    #pca.fit(embeddings)
+    #pickle.dump(pca, open(pca_file, 'wb'))
+    #embeddings = pca.transform(embeddings)
+
+    #return embeddings
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='CS2770 HW3 Data Preparation')
+    parser.add_argument('--embedding_file', type=pathlib.Path, help='The embedding file')
+    parser.add_argument('--output_file', type=pathlib.Path, help='Output')
+    args = parser.parse_args()
+    
+    prepare_embedding(args.embeding_file, args.output_file)
+   
+    
