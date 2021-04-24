@@ -1,4 +1,6 @@
-import argparse, os, math, nltk, pathlib, pickle, random, requests, numpy as np, torch
+import argparse, os, math, nltk
+import pandas as pd, pathlib, pickle
+import random, requests, numpy as np, torch
 import torchvision.transforms as transforms
 import torch.utils.data as data
 from collections import defaultdict
@@ -85,6 +87,8 @@ def get_loaders(root, img_data_file, embedding_file, batch_size, num_workers):
 # Create and pickle the embedding.  This includes normalizing and, if necessary, using PCA to 
 # reduce the dimensions to 50
 def prepare_embedding(embedding_file, output_file):
+
+    # Read in embeddings
     words = []
     embeddings = []
     
@@ -93,24 +97,21 @@ def prepare_embedding(embedding_file, output_file):
             values = line.split()
             words.append(values[0])
             embeddings.append(np.asarray(values[1:], "float32"))
-           
-    #embeddings.append(np.mean(embeddings, axis=0))
-    #words.append('<UNK>')
+       
+    embeddings = pd.DataFrame(embeddings, index=words) 
     
     # Normalize the embeddings
     scaler = StandardScaler()
     scaler.fit(embeddings)
-    print(scaler.get_params())
-    #pickle.dump(scaler, open(scaler_file, 'wb'))
-    #embeddings = scaler.transform(embeddings)
+    embeddings = scaler.transform(embeddings)
 
     # Reduce dimensions using PCA
-    #pca = PCA(n_components=k)
-    #pca.fit(embeddings)
-    #pickle.dump(pca, open(pca_file, 'wb'))
-    #embeddings = pca.transform(embeddings)
-
-    #return embeddings
+    pca = PCA(n_components=50)
+    pca.fit(embeddings)
+    embeddings = pca.transform(embeddings)
+    
+    # Output
+    pickle.dump(embeddings, open(output_file, 'wb'))
 
 if __name__ == "__main__":
 
