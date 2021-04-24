@@ -126,7 +126,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     
-    if len(args.image_data_set) > 2:
+    if (len(args.image_data_set) > 2):
         raise Exception('Only two image data set arguments are allowed, found {len(args.image_data_set)}')
     for img_data_set in args.image_data_set:
         if not (img_data_set == 'coco' or img_data_set == 'news'):
