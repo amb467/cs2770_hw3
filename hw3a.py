@@ -47,8 +47,7 @@ def triplet_loss_batch(criterion, outputs, targets):
 # Make a complete derangement of tensor t
 def make_derangement(t):
 
-    t_list = list(t)
-    
+    t_list = list(t) 
     new_indices = []
     indices = [0]
 
@@ -65,7 +64,7 @@ def make_derangement(t):
             new_indices.append(indices.pop(0))
 
     new_list = [t_list[i] for i in new_indices]
-    return torch.tensor(new_list, requires_grad=True)
+    return torch.stack(new_list, 0)
     
 def train(epochs, data_loaders):
 
