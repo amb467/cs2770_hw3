@@ -15,7 +15,8 @@ def dim_reduce(t):
     m = AvgPool1d(20)   
     t = m(t.unsqueeze(1))
     return t.squeeze()
-  
+ 
+""" 
 # Calculate triplet loss for the given anchor, positive, and negative tensors
 def triplet_loss(anchor, positive, negative, margin=0.5):
     x1 = anchor.unsqueeze(0)
@@ -24,11 +25,10 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
     pos_dist = float(distance[0])
     neg_dist = float(distance[1])
     return max(pos_dist - neg_dist + margin, 0)
-
+    
 # For each output and each target, calculate the triplet loss from the target and a negative
 # sample.  Return the average loss
 def triplet_loss_batch(criterion, outputs, targets):
-    
     output_list = list(outputs)
     target_list = list(targets)
     l = len(output_list)
@@ -42,7 +42,30 @@ def triplet_loss_batch(criterion, outputs, targets):
         losses.append(triplet_loss(output, target, target_list[n]))
     
     return torch.tensor(losses, requires_grad = True)
+"""
+
+# Make a complete derangement of tensor t
+def make_derangement(t):
+
+    t_list = [float(i) for i in list(t)]
+    new_indices = []
+    indices = [0]
+
+    while len(new_indices) < len(t_list):
+
+        if len(indices) == 1 and indices[0] == len(new_indices):
+            indices = list(range(len(t_list)))
+            new_indices = []
+            continue
         
+        random.shuffle(indices)
+    
+        while len(indices) > 0 and indices[0] != len(new_indices):
+            new_indices.append(indices.pop(0))
+
+    new_list = [t_list[i] for i in new_indices]
+    return torch.tensor(new_list, requires_grad=True)
+    
 def train(epochs, data_loaders):
 
     model = models.alexnet(pretrained=True)
@@ -68,8 +91,9 @@ def train(epochs, data_loaders):
             optimizer.zero_grad()
             outputs = dim_reduce(model(inputs))
     
-            loss = triplet_loss_batch(criterion, outputs, targets)
-            print(f'Loss: {loss}')
+            # Make a derangement of targets so the negative is always different from positive
+            negatives = make_derangement(targets)
+            loss = criterion(inputs, targets, negatives)
             loss.backward()
             optimizer.step()
     
