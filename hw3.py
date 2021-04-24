@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     if len(args.embedding) > 2:
         raise Exception('Only two embedding arguments are allowed, found {len(args.embedding)}')
-    for e in embedding:
+    for e in args.embedding:
         if not (e == 'glove' or e == 'w2v'):
             raise Exception('Only "glove" and "w2v" are acceptable as embeddings, found {e}') 
     
