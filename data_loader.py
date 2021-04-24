@@ -1,4 +1,5 @@
-import argparse, gensim, os, math, nltk
+import argparse, gensim, gensim.downloader
+import os, math, nltk
 import pandas as pd, pathlib, pickle
 import random, requests, numpy as np, torch
 import torchvision.transforms as transforms
