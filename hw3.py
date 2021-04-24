@@ -126,13 +126,13 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     
-    if (len(args.image_data_set) > 2):
+    if len(args.image_data_set) > 2:
         raise Exception('Only two image data set arguments are allowed, found {len(args.image_data_set)}')
     for img_data_set in args.image_data_set:
         if not (img_data_set == 'coco' or img_data_set == 'news'):
-            raise Exception('Only "coco" and "news" are acceptable as image data sets, found {img_data_set}'
+            raise Exception('Only "coco" and "news" are acceptable as image data sets, found {img_data_set}')
 
-    if (len(args.embedding) > 2):
+    if len(args.embedding) > 2:
         raise Exception('Only two embedding arguments are allowed, found {len(args.embedding)}')
     for e in embedding:
         if not (e == 'glove' or e == 'w2v'):
