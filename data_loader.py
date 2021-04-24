@@ -65,9 +65,12 @@ class CocoDataset(data.Dataset):
 def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
     
     # Open datasets
-    datasets = pickle.load(os.path.join(data_dir, open(IMAGE_DATA_SET[img_data_set], 'rb')))
+    
+    data_set_path = os.path.join(data_dir, IMAGE_DATA_SET[img_data_set])
+    datasets = pickle.load(data_set_path, 'rb')
     # Open embedding
-    vocab = pickle.load(os.path.join(data_dir, open(EMBEDDING_FILE[embedding], 'rb')))
+    embedding_path = os.path.join(data_dir, EMBEDDING_FILE[embedding])
+    vocab = pickle.load(embedding_path, 'rb')
     
     data_loaders = {}
     for ds in ['train', 'val', 'test']:
