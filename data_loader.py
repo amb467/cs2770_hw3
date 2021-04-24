@@ -123,15 +123,15 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
     file_data = {}
     # Open and read the caption data file  
     with open(img_data_file, "r") as f:
-        lines = f.readlines()
-        row = lines.split('\t')
-        img_id = row[0]
-        caption = row[1]
-        img_url = row[2]
-        file_data[img_id] = {
-            'caption': caption,
-            'img_url': img_url
-        }
+        for line in f.readlines() 
+            row = line.split('\t')
+            img_id = row[0]
+            caption = row[1]
+            img_url = row[2]
+            file_data[img_id] = {
+                'caption': caption,
+                'img_url': img_url
+            }
 
     # Create train, validation, and test splits
     id_list = list(file_data.keys())
