@@ -12,7 +12,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # t is a tensor with dimensions N x 1000, return a tensor with dimensions N x 50
 def dim_reduce(t):
-    m = AvgPool1d(20)	
+    m = AvgPool1d(20)   
     t = m(t.unsqueeze(1))
     return t.squeeze()
   
@@ -28,28 +28,28 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
 # For each output and each target, calculate the triplet loss from the target and a negative
 # sample.  Return the average loss
 def triplet_loss_batch(criterion, outputs, targets):
-	
-	output_list = list(outputs)
-	target_list = list(targets)
-	l = len(output_list)
-	losses = []
-		
-	for i, (output, target) in enumerate(zip(output_list, target_list)):
-		n = random.randrange(l)
-		while n == i:
-			n = random.randrange(l)
-		
-		losses.append(triplet_loss(output, target, target_list[n]))
-	
-	return torch.tensor(losses, requires_grad = True)
-		
+    
+    output_list = list(outputs)
+    target_list = list(targets)
+    l = len(output_list)
+    losses = []
+        
+    for i, (output, target) in enumerate(zip(output_list, target_list)):
+        n = random.randrange(l)
+        while n == i:
+            n = random.randrange(l)
+        
+        losses.append(triplet_loss(output, target, target_list[n]))
+    
+    return torch.tensor(losses, requires_grad = True)
+        
 def train(epochs, data_loaders):
 
     model = models.alexnet(pretrained=True)
     model.to(device)
     #summary(model, (3, 299, 299))
 
-	criterion = TripletMarginLoss()
+    criterion = TripletMarginLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
