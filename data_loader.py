@@ -1,4 +1,4 @@
-import argparse, os, math, nltk
+import argparse, gensim, os, math, nltk
 import pandas as pd, pathlib, pickle
 import random, requests, numpy as np, torch
 import torchvision.transforms as transforms
@@ -10,6 +10,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 GLOVE_OUTPUT_FILE = 'glove.pkl'
+WORD2VEC_OUTPUT_FILE = 'word2vec.pkl'
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
@@ -84,22 +85,7 @@ def get_loaders(root, img_data_file, embedding_file, batch_size, num_workers):
                                               num_workers=num_workers)
     return data_loaders
 
-# Create and pickle the embedding.  This includes normalizing and, if necessary, using PCA to 
-# reduce the dimensions to 50
-def prepare_embedding(embedding_file, output_file):
-
-    # Read in embeddings
-    words = []
-    embeddings = []
-    
-    with open(embedding_file, 'r') as f:
-        for line in f:
-            values = line.split()
-            words.append(values[0])
-            embeddings.append(np.asarray(values[1:], "float32"))
-       
-    embeddings = pd.DataFrame(embeddings, index=words) 
-    
+def normalize_reduce(embeddings):
     # Normalize the embeddings
     scaler = StandardScaler()
     scaler.fit(embeddings)
@@ -110,9 +96,38 @@ def prepare_embedding(embedding_file, output_file):
     pca.fit(embeddings)
     embeddings = pca.transform(embeddings)
     
-    # Output
-    pickle.dump(embeddings, open(output_file, 'wb'))
+    return embeddings
 
+# Create and pickle the embedding.  This includes normalizing and, if necessary, using PCA to 
+# reduce the dimensions to 50
+def prepare_embeddings(embedding_file, output_dir):
+
+    # Read in embeddings
+    words = []
+    glove_embeddings = []
+    
+    with open(embedding_file, 'r') as f:
+        for line in f:
+            values = line.split()
+            words.append(values[0])
+            glove_embeddings.append(np.asarray(values[1:], "float32"))
+       
+    glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
+    glove_embeddings = normalize_reduce(glove_embeddings)
+    
+    w2v = gensim.downloader.load('word2vec-google-news-300')
+    
+    word2vec_embeddings = [w2v.wv[word] for word in words]
+    word2vec_embeddings = pd.DataFrame(word2vec_embeddings, index=words)
+    word2vec_embeddings = normalize_reduce(word2vec_embeddings)
+    
+    # Output
+    output_file = os.path.join(args.output_dir, GLOVE_OUTPUT_FILE) 
+    pickle.dump(glove_embeddings, open(output_file, 'wb'))
+
+    output_file = os.path.join(args.output_dir, WORD2VEC_OUTPUT_FILE) 
+    pickle.dump(word2vec_embeddings, open(output_file, 'wb'))    
+    
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='CS2770 HW3 Data Preparation')
@@ -123,7 +138,6 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     
-    output_file = os.path.join(args.output_dir, GLOVE_OUTPUT_FILE) 
-    prepare_embedding(args.glove_embedding, output_file)
+    prepare_embedding(args.glove_embedding, args.output_dir)
    
     
