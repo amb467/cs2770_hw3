@@ -135,7 +135,7 @@ def create_good_news_image_sets(img_dir, url_data_file, caption_data_file, outpu
     data_sets = create_splits(id_list, max_images)
 
     news_ds = {}
-    for ds, ids in data_Sets.items():
+    for ds, ids in data_sets.items():
         news_ds[ds] = {}
         news_ds[ds]['image-ids'] = ids
         news_ds[ds]['captions'] = [img_id_to_caption[i] for i in ids]
