@@ -112,8 +112,11 @@ def prepare_embeddings(embedding_file, output_dir):
     glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
     glove_embeddings = normalize_reduce(glove_embeddings)
     
-    word2vec_embeddings = gensim.downloader.load('word2vec-google-news-300')
-    word2vec_embeddings = pd.DataFrame.from_dict(word2vec_embeddings.wv)
+    w2v = gensim.downloader.load('word2vec-google-news-300')
+    words = list(w2v.keys())
+    word2vec_embeddings = list(w2v.items())
+    word2vec_embeddings = pd.DataFrame(word2vec_embeddings, index=words)
+    #word2vec_embeddings = pd.DataFrame.from_dict(word2vec_embeddings.wv)
     word2vec_embeddings = normalize_reduce(word2vec_embeddings)
     
     # Output
