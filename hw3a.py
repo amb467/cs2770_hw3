@@ -69,6 +69,7 @@ def train(epochs, data_loaders):
             loss = criterion(outputs, targets, negatives)
             loss.backward()
             optimizer.step()
+            break
     
         scheduler.step()
 
@@ -87,6 +88,7 @@ def get_test_results(model, data_loader):
         distances = torch.cdist(targets, outputs)
         values, indices = torch.max(distances, 0)
         print(f'Size of indices is {indices.size()}')
+        break
     
 if __name__ == "__main__":
 
