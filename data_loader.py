@@ -115,7 +115,6 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
     output_file = os.path.join(output_dir, IMAGE_DATA_SET['coco'])
     print(f'Outputting COCO data sets as: {output_file}')
     pickle.dump(coco_ds, open(output_file, 'wb'))
-    print('Done with outputting')
 
 # For the Good News corpus, download files and create data objects for training, validation, and test sets
 def create_good_news_image_sets(img_dir, url_data_file, caption_data_file, output_dir, max_images=5000):
@@ -165,7 +164,12 @@ def create_good_news_image_sets(img_dir, url_data_file, caption_data_file, outpu
             r = requests.get(img_url)
         
             with open(img_file_path,'wb') as f:
-                f.write(r.content)      
+                f.write(r.content)
+    
+    # Output the data objects for each split
+    output_file = os.path.join(output_dir, IMAGE_DATA_SET['news'])
+    print(f'Outputting Good News data sets as: {output_file}')
+    pickle.dump(news_ds, open(output_file, 'wb'))   
     
 # Normalize embeddings and use PCA to reduce dimensions to 50        
 def normalize_reduce(embeddings):
@@ -198,6 +202,7 @@ def prepare_embeddings(embedding_file, output_dir):
        
     glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
     glove_embeddings = normalize_reduce(glove_embeddings)
+    print(f'GloVe embeddings have type {type(glove_embeddings)} and size {glove_embeddings.size} and shape {glove_embeddings.shape}')
     
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['glove'])
     print(f'Outputting GloVe embeddings to file {output_file}')
@@ -222,7 +227,10 @@ if __name__ == "__main__":
     parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
     parser.add_argument('--glove_embedding', type=pathlib.Path, help='The GloVe embedding file')
     parser.add_argument('--image_dir', type=pathlib.Path, help='Directory with image files')
-    parser.add_argument('--image_data_file', type=pathlib.Path, help='JSON file with image data')
+    parser.add_argument('--coco_data_file', type=pathlib.Path, help='COCO JSON file with image data')
+    parser.add_argument('--news_caption_file', type=pathlib.Path, help='Good News JSON caption file')
+    parser.add_argument('--news_url_file', type=pathlib.Path, help='Good News JSON url file')
+    
     args = parser.parse_args()
     
     if not os.path.exists(args.output_dir):
@@ -231,5 +239,8 @@ if __name__ == "__main__":
     if args.glove_embedding is not None:
         prepare_embeddings(args.glove_embedding, args.output_dir)
    
-    if args.image_dir is not None:
-        create_coco_image_sets(args.image_dir, args.image_data_file, args.output_dir)   
+    if args.coco_data_file is not None:
+        create_coco_image_sets(args.image_dir, args.coco_data_file, args.output_dir)
+    
+    if args.news_caption_file is not None:
+        create_good_news_image_sets(args.image_dir, args.news_url_file, args.news_caption_file, args.output_dir)
