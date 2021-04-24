@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     
-    if glove_embedding in args:
+    if args.glove_embedding is not None:
     	prepare_embeddings(args.glove_embedding, args.output_dir)
    
     
