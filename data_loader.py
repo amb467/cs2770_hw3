@@ -100,7 +100,7 @@ def prepare_embedding(embedding_file, output_file):
     # Normalize the embeddings
     scaler = StandardScaler()
     scaler.fit(embeddings)
-    print(scalar.get_params())
+    print(scaler.get_params())
     #pickle.dump(scaler, open(scaler_file, 'wb'))
     #embeddings = scaler.transform(embeddings)
 
