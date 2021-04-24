@@ -97,7 +97,7 @@ def normalize_reduce(embeddings):
 
 # Create and pickle the embedding.  This includes normalizing and, if necessary, using PCA to 
 # reduce the dimensions to 50
-def prepare_embeddings2(embedding_file, output_dir):
+def prepare_embeddings(embedding_file, output_dir):
 
     # Read in embeddings
     words = []
@@ -112,10 +112,8 @@ def prepare_embeddings2(embedding_file, output_dir):
     glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
     glove_embeddings = normalize_reduce(glove_embeddings)
     
-    w2v = gensim.downloader.load('word2vec-google-news-300')
-    
-    word2vec_embeddings = [w2v.wv[word] for word in words if word in w2v.wv.vocab]
-    word2vec_embeddings = pd.DataFrame(word2vec_embeddings, index=words)
+    word2vec_embeddings = gensim.downloader.load('word2vec-google-news-300')
+    word2vec_embeddings = pd.DataFrame.from_dict(word2vec_embeddings.wv)
     word2vec_embeddings = normalize_reduce(word2vec_embeddings)
     
     # Output
@@ -124,12 +122,6 @@ def prepare_embeddings2(embedding_file, output_dir):
 
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec']) 
     pickle.dump(word2vec_embeddings, open(output_file, 'wb')) 
-    
-def prepare_embeddings(embedding_file, output_dir):
-  
-    w2v = gensim.downloader.load('word2vec-google-news-300')
-    vector = w2v.wv.vocab
-    print(f'Vector type is {type(vector)}')  
     
 if __name__ == "__main__":
 
