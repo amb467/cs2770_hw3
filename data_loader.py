@@ -120,12 +120,17 @@ def prepare_embeddings(embedding_file, output_dir):
     # Reading w2v embeddings
     print('Reading Word2Vec embeddings...')
     w2v = gensim.downloader.load('word2vec-google-news-300')
+    print('Making word list')
     words = list(w2v.vocab)
+    print('Making embedding list')
     w2v_embeddings = [w2v[word] for word in words]
+    print('Creating data frame')
     w2v_embeddings = pd.DataFrame(w2v_embeddings, index=words)
     #w2v_embeddings = pd.DataFrame.from_dict(w2v_embeddings.wv)
+    print('Normalizing and reducing')
     w2v_embeddings = normalize_reduce(w2v_embeddings)
 
+    print('About to output')
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec'])
     print(f'Outputting Word2Vec embeddings to file {output_file}')
     pickle.dump(word2vec_embeddings, open(output_file, 'wb')) 
