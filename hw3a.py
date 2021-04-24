@@ -68,6 +68,7 @@ def train(epochs, data_loaders):
             outputs = dim_reduce(model(inputs))
     
             loss = triplet_loss_batch(outputs, targets)
+            print(f'Loss: {loss}')
             loss.backward()
             optimizer.step()
     
