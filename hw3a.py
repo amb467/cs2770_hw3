@@ -1,7 +1,7 @@
 import argparse, os, pathlib, random, torch
 import torch.optim as optim
 import torchvision.models as models
-from torch.nn import AvgPool1d
+from torch.nn import AvgPool1d, TripletMarginLoss
 from torch.optim import lr_scheduler
 from torchvision import transforms
 from data_loader import get_loaders
@@ -15,7 +15,7 @@ def dim_reduce(t):
     m = AvgPool1d(20)	
     t = m(t.unsqueeze(1))
     return t.squeeze()
-    
+  
 # Calculate triplet loss for the given anchor, positive, and negative tensors
 def triplet_loss(anchor, positive, negative, margin=0.5):
     x1 = anchor.unsqueeze(0)
@@ -27,13 +27,13 @@ def triplet_loss(anchor, positive, negative, margin=0.5):
 
 # For each output and each target, calculate the triplet loss from the target and a negative
 # sample.  Return the average loss
-def triplet_loss_batch(outputs, targets):
-
+def triplet_loss_batch(criterion, outputs, targets):
+	
 	output_list = list(outputs)
 	target_list = list(targets)
 	l = len(output_list)
 	losses = []
-	
+		
 	for i, (output, target) in enumerate(zip(output_list, target_list)):
 		n = random.randrange(l)
 		while n == i:
@@ -41,7 +41,7 @@ def triplet_loss_batch(outputs, targets):
 		
 		losses.append(triplet_loss(output, target, target_list[n]))
 	
-	return torch.Tensor(losses, dtype=torch.float, device=device, requires_grad = True)
+	return torch.tensor(losses, requires_grad = True)
 		
 def train(epochs, data_loaders):
 
@@ -49,6 +49,7 @@ def train(epochs, data_loaders):
     model.to(device)
     #summary(model, (3, 299, 299))
 
+	criterion = TripletMarginLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
@@ -67,7 +68,7 @@ def train(epochs, data_loaders):
             optimizer.zero_grad()
             outputs = dim_reduce(model(inputs))
     
-            loss = triplet_loss_batch(outputs, targets)
+            loss = triplet_loss_batch(criterion, outputs, targets)
             print(f'Loss: {loss}')
             loss.backward()
             optimizer.step()
