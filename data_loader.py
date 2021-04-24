@@ -162,5 +162,5 @@ if __name__ == "__main__":
     if args.glove_embedding is not None:
         prepare_embeddings(args.glove_embedding, args.output_dir)
    
-    if args.image_directory is not None:
+    if args.image_dir is not None:
         create_coco_image_sets(args.image_dir, args.image_data_file, args.output_dir)   
