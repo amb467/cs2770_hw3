@@ -96,7 +96,7 @@ def create_splits(id_list, max_images, train_val_proportion=0.08):
     return data_sets
         
 # Create data objects for the training, validation, and test sets for each image data set
-def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
+def create_coco_image_sets(img_dir, img_data_file, output_dir, , max_images=5000):
     coco = COCO(img_data_file)
     id_list = list(coco.anns.keys())
     data_sets = create_splits(id_list, max_images)
@@ -114,49 +114,39 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
     pickle.dump(coco_ds, open(output_file, 'wb'))
 
 # For the Good News corpus, download files and create data objects for training, validation, and test sets
-def create_good_news_image_sets(img_dir, url_data_file, caption_data_file, output_dir, max_images=5000):
+def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
 
     # Create a directory to save the image files if it doesn't exist
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
     
+    file_data = {}
     # Open and read the caption data file  
-    with open(caption_data_file, "rb") as f:
-        captioning_dataset = json.load(f)
-
-    img_id_to_caption = {}
-    for k, anns in captioning_dataset.items():
-        for ix, caption in anns['images'].items():
-            img_id = f'{k}_{ix}'
-            img_id_to_caption[img_id] = caption
+    with open(img_data_file, "r") as f:
+        lines = f.readlines()
+        row = lines.split('\t')
+        img_id = row[0]
+        caption = row[1]
+        img_url = row[2]
+        file_data[img_id] = {
+            'caption': caption,
+            'img_url': img_url
+        }
 
     # Create train, validation, and test splits
-    id_list = list(img_id_to_caption.keys())
+    id_list = list(file_data.keys())
     data_sets = create_splits(id_list, max_images)
 
     news_ds = {}
     for ds, ids in data_sets.items():
         news_ds[ds] = {}
         news_ds[ds]['image-ids'] = ids
-        news_ds[ds]['captions'] = [img_id_to_caption[i] for i in ids]
-    
-    # Open and read the image url data file
-    with open(url_data_file, "rb") as f:
-        url_dataset = json.load(f)
-    
-    img_id_to_url = {}
-    for k, anns in url_dataset.items():
-        for ix, url in anns.items():
-            img_id = f'{k}_{ix}'
-            if img_id in id_list:
-                img_id_to_url[img_id] = url
-    
-    # For each image in the training, validation, and test set, download the image file
-    for ds, ids in data_Sets.items():
-        urls = [img_id_to_url[i] for i in ids]
+        news_ds[ds]['captions'] = [file_data[i]['caption'] for i in ids]
+        
+        urls = [file_data[i]['img_url'] for i in ids]
         image_paths = [os.path.join(img_dir, i) for i in ids]
         news_ds[ds]['image-paths'] = image_paths
-        
+                
         for img_url, img_file_path in zip(urls, image_paths):
             r = requests.get(img_url)
         
@@ -227,8 +217,7 @@ if __name__ == "__main__":
     parser.add_argument('--glove_embedding', type=pathlib.Path, help='The GloVe embedding file')
     parser.add_argument('--image_dir', type=pathlib.Path, help='Directory with image files')
     parser.add_argument('--coco_data_file', type=pathlib.Path, help='COCO JSON file with image data')
-    parser.add_argument('--news_caption_file', type=pathlib.Path, help='Good News JSON caption file')
-    parser.add_argument('--news_url_file', type=pathlib.Path, help='Good News JSON url file')
+    parser.add_argument('--news_data_file', type=pathlib.Path, help='Good News tab-delimited file')
     
     args = parser.parse_args()
     
@@ -241,5 +230,5 @@ if __name__ == "__main__":
     if args.coco_data_file is not None:
         create_coco_image_sets(args.image_dir, args.coco_data_file, args.output_dir)
     
-    if args.news_caption_file is not None:
-        create_good_news_image_sets(args.image_dir, args.news_url_file, args.news_caption_file, args.output_dir)
+    if args.news_data_file is not None:
+        create_good_news_image_sets(args.image_dir, args.news_data_file, args.output_dir)
