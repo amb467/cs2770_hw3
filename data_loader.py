@@ -25,7 +25,7 @@ class CocoDataset(data.Dataset):
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
-        self.vocab_mean = np.mean(np.stack(list(self.vocab.values()), 0), axis=0)
+        self.vocab_mean = np.zeros(50)
 
     def _get_token_vec(self, token):
         return self.vocab[token] if token in self.vocab else self.vocab_mean
@@ -68,13 +68,7 @@ def get_loaders(root, img_data_file, embedding_file, batch_size, num_workers):
         data_sets['test'].append(data_sets['train'].pop())
     
     # Create an embedding dictionary
-    vocab = {}
-    with open(embedding_file, 'r') as f:
-        for line in f:
-            values = line.split()
-            word = values[0]
-            vector = np.asarray(values[1:], "float32")
-            vocab[word] = vector
+    vocab = pickle.load(open(embedding_file, 'rb'))
     
     data_loaders = {}
     for ds, ids in data_sets.items():
@@ -118,7 +112,7 @@ def prepare_embeddings(embedding_file, output_dir):
     
     w2v = gensim.downloader.load('word2vec-google-news-300')
     
-    word2vec_embeddings = [w2v.wv[word] for word in words]
+    word2vec_embeddings = [w2v.wv[word] for word in words if word in w2v.wv.vocab]
     word2vec_embeddings = pd.DataFrame(word2vec_embeddings, index=words)
     word2vec_embeddings = normalize_reduce(word2vec_embeddings)
     
@@ -139,6 +133,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     
-    prepare_embeddings(args.glove_embedding, args.output_dir)
+    if glove_embedding in args:
+    	prepare_embeddings(args.glove_embedding, args.output_dir)
    
     
