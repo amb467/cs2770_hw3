@@ -41,7 +41,7 @@ def triplet_loss_batch(outputs, targets):
 		
 		losses.append(triplet_loss(output, target, target_list[n]))
 	
-	return torch.Tensor(losses, device=device, requires_grad = True)
+	return torch.Tensor(losses, dtype=torch.float, device=device, requires_grad = True)
 		
 def train(epochs, data_loaders):
 
