@@ -73,7 +73,7 @@ def train(epochs, data_loaders):
     
         scheduler.step()
 
-        get_rest_results(model, data_loaders['val'])
+        get_test_results(model, data_loaders['val'])
         
     
 def get_test_results(model, data_loader):
