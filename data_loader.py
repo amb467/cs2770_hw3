@@ -100,6 +100,7 @@ def normalize_reduce(embeddings):
 def prepare_embeddings(embedding_file, output_dir):
 
     # Read in embeddings
+    print('Reading GloVe embeddings...')
     words = []
     glove_embeddings = []
     
@@ -112,18 +113,21 @@ def prepare_embeddings(embedding_file, output_dir):
     glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
     glove_embeddings = normalize_reduce(glove_embeddings)
     
+    output_file = os.path.join(args.output_dir, EMBEDDING_FILE['glove'])
+    print(f'Outputting GloVe embeddings to file {output_file}')
+    pickle.dump(glove_embeddings, open(output_file, 'wb'))
+    
+    # Reading w2v embeddings
+    print('Reading Word2Vec embeddings...')
     w2v = gensim.downloader.load('word2vec-google-news-300')
     words = list(w2v.wv.vocab)
-    word2vec_embeddings = [w2v.wv[word] for word in words]
-    word2vec_embeddings = pd.DataFrame(word2vec_embeddings, index=words)
-    #word2vec_embeddings = pd.DataFrame.from_dict(word2vec_embeddings.wv)
-    word2vec_embeddings = normalize_reduce(word2vec_embeddings)
-    
-    # Output
-    output_file = os.path.join(args.output_dir, EMBEDDING_FILE['glove']) 
-    pickle.dump(glove_embeddings, open(output_file, 'wb'))
+    w2v_embeddings = [w2v.wv[word] for word in words]
+    w2v_embeddings = pd.DataFrame(w2v_embeddings, index=words)
+    #w2v_embeddings = pd.DataFrame.from_dict(w2v_embeddings.wv)
+    w2v_embeddings = normalize_reduce(w2v_embeddings)
 
-    output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec']) 
+    output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec'])
+    print(f'Outputting Word2Vec embeddings to file {output_file}')
     pickle.dump(word2vec_embeddings, open(output_file, 'wb')) 
     
 if __name__ == "__main__":
