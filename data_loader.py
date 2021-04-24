@@ -125,6 +125,9 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
     with open(img_data_file, "r") as f:
         for line in f.readlines():
             row = line.split('\t')
+            if len(row) < 3:
+                print(f'Invalid row with size {len(row)}: {line}')
+                continue
             img_id = row[0]
             caption = row[1]
             img_url = row[2]
