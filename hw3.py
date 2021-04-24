@@ -115,7 +115,7 @@ if __name__ == "__main__":
     parser.add_argument('--data_dir', type=pathlib.Path, help='The directory where image and embedding pickle files can be found')
     parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
     parser.add_argument('--image_data_set', nargs="+", type=str, help='The image data set(s) to use.  Must be "coco" or "news". If two are provided, the first will be used for training and the second for evaluation')
-      args = parser.parse_args()
+    args = parser.parse_args()
     
     # Validate arguments
     if not (args.model == "alex" or args.model == "res"):
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     model_path = os.path.join(args.output_dir, f'{args.model}_{args.embedding}_{args.epochs}_{args.image_data_set[0]}_{args.image_data_set[-1]}.pth')
     batch_size = 128
     num_workers = 2
-    model = models.alexnet(pretrained=True) if args.model == "alex" else None
+    model = models.alexnet(pretrained=True) if args.model == "alex" else models.resnet18(pretrained=True)
     
     # Training
     print(f'Training with model {args.model}, embedding {args.embedding}, image data set {args.image_data_set[0]}')
