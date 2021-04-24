@@ -123,7 +123,7 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
     file_data = {}
     # Open and read the caption data file  
     with open(img_data_file, "r") as f:
-        for line in f.readlines() 
+        for line in f.readlines():
             row = line.split('\t')
             img_id = row[0]
             caption = row[1]
