@@ -35,10 +35,7 @@ class ImageDataset(data.Dataset):
     
     # Return the vector for the token or the mean vector if the token is unknown   
     def _get_token_vec(self, token):
-        try:
-            return self.vocab.loc(token).to_numpy
-        except KeyError:
-            return self.vocab_mean
+        return self.vocab[token] if token in self.vocab else self.vocab_mean
     
     # Return the image and caption at the index    
     def __getitem__(self, index):
@@ -191,18 +188,18 @@ def prepare_embeddings(embedding_file, output_dir):
 
     # Read in embeddings
     print('Reading GloVe embeddings...')
-    words = []
+    glove_words = []
     glove_embeddings = []
     
     with open(embedding_file, 'r') as f:
         for line in f:
             values = line.split()
-            words.append(values[0])
+            glove_words.append(values[0])
             glove_embeddings.append(np.asarray(values[1:], "float32"))
        
     glove_embeddings = pd.DataFrame(glove_embeddings)
     glove_embeddings = normalize_reduce(glove_embeddings)
-    glove_embeddings = pd.DataFrame(glove_embeddings, index=words)
+    glove_embeddings = dict(zip(glove_words, glove_embeddings.tolist()))
     print(f'GloVe embeddings have type {type(glove_embeddings)}')
     
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['glove'])
@@ -212,12 +209,12 @@ def prepare_embeddings(embedding_file, output_dir):
     # Reading w2v embeddings
     print('Reading Word2Vec embeddings...')
     w2v = gensim.downloader.load('word2vec-google-news-300')
-    words = set(w2v.vocab).intersection(set(words))
-    embeddings = [w2v[word] for word in words]
-    w2v_embeddings = pd.DataFrame(embeddings)
+    w2v_words = set(w2v.vocab).intersection(set(glove_words))
+    w2v_embeddings = [w2v[word] for word in words]
+    w2v_embeddings = pd.DataFrame(w2v_embeddings)
     #w2v_embeddings = pd.DataFrame.from_dict(w2v_embeddings.wv)
     w2v_embeddings = normalize_reduce(w2v_embeddings)
-    w2v_embeddings = pd.DataFrame(embeddings, index=words)
+    w2v_embeddings = dict(zip(w2v_words, w2v_embeddings.tolist()))
 
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['word2vec'])
     print(f'Outputting Word2Vec embeddings to file {output_file}')
