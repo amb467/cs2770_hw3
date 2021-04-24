@@ -20,33 +20,28 @@ IMAGE_DATA_SET = {
     'news': 'news.pkl'
 }
 
-class CocoDataset(data.Dataset):
-    """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
-    def __init__(self, root, coco, ids):
-        self.root = root
-        self.coco = coco
-        self.ids = ids
+class ImageDataset(data.Dataset):
+    def __init__(self, image_ids, captions, image_paths, vocab):
+        self.image_ids = image_ids
+        self.captions = captions
+        self.image_paths = image_paths
+        self.vocab = vocab
         self.transform = data_transforms = transforms.Compose([
             transforms.Resize((224,224)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
         self.vocab_mean = np.zeros(50)
-
-    def set_vocab(vocab):
-        self.vocab = vocab
-        
+    
+    # Return the vector for the token or the mean vector if the token is unknown   
     def _get_token_vec(self, token):
         return self.vocab[token] if token in self.vocab else self.vocab_mean
-        
+    
+    # Return the image and caption at the index    
     def __getitem__(self, index):
-        """Returns one data pair (image and caption)."""
-        coco = self.coco
-        vocab = self.vocab
-        ann_id = self.ids[index]
-        caption = coco.anns[ann_id]['caption']
-        img_id = coco.anns[ann_id]['image_id']
-        img_path = os.path.join(self.root, coco.loadImgs(img_id)[0]['file_name'])
+        img_id = self.image_ids[index]
+        caption = self.captions[index]
+        img_path = self.image_paths[index]
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
             image = self.transform(image)
@@ -73,9 +68,12 @@ def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
     vocab = pickle.load(open(embedding_path, 'rb'))
     
     data_loaders = {}
-    for ds in ['train', 'val', 'test']:
-        datasets[ds].set_vocab(vocab)
-        data_loaders[ds] = torch.utils.data.DataLoader(dataset=datasets[ds], 
+    for ds, obj in datasets.items():
+        image_ids = obj['image-ids']
+        captions = obj['captions']
+        image_paths = obj['image-paths']
+        dataset = ImageDataset(image_ids, captions, image_paths, vocab)
+        data_loaders[ds] = torch.utils.data.DataLoader(dataset=dataset, 
                                               batch_size=batch_size,
                                               shuffle=True,
                                               num_workers=num_workers)
@@ -96,7 +94,11 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir):
     
     coco_ds = {}
     for ds, ids in data_sets.items():
-        coco_ds[ds] =  CocoDataset(img_dir, coco, ids)
+        coco_ds[ds] = {}
+        coco_ds[ds]['image-ids'] = [coco.anns[i]['image_id'] for i in ids]
+        coco_ds[ds]['captions'] = [coco.anns[i]['caption'] for i in ids]
+        coco_ds[ds]['image-paths'] = [coco.loadImgs(img_id)[0]['file_name'] for img_id in coco_ds[ds]['image-ids']]
+        coco_ds[ds]['image-paths'] = [os.path.join(img_dir, filename) for filename in coco_ds[ds]['image-paths']]
         
     output_file = os.path.join(output_dir, IMAGE_DATA_SET['coco'])
     print(f'Outputting COCO data sets as: {output_file}')
