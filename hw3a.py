@@ -1,6 +1,7 @@
 import argparse, os, pathlib, random, torch
 import torch.optim as optim
 import torchvision.models as models
+import torch.autograd.variable as Variable
 from torch.nn import AvgPool1d
 from torch.optim import lr_scheduler
 from torchvision import transforms
@@ -41,7 +42,7 @@ def triplet_loss_batch(outputs, targets):
 		
 		losses.append(triplet_loss(output, target, target_list[n]))
 	
-	return torch.Tensor(losses)
+	return Variable(torch.Tensor(losses), requires_grad=True)
 		
 def train(epochs, data_loaders):
 
