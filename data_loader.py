@@ -80,12 +80,16 @@ def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
     return data_loaders
 
 # Create data files for the training, validation, and test sets for each image data set
-def create_coco_image_sets(img_dir, img_data_file, output_dir):
+def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=1000):
     train_val_proportion = 0.08
     data_sets = defaultdict(list)
     coco = COCO(img_data_file)
     data_sets['train'] = list(coco.anns.keys())
     random.shuffle(data_sets['train'])
+    
+    if max_images is not None:
+    	data_sets['train'] = data_sets['train'][:max_images]
+ 	
     train_val_size = math.floor(train_val_proportion * len(data_sets['train']))
     
     for i in range(train_val_size):
