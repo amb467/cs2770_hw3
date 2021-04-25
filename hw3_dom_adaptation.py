@@ -5,38 +5,10 @@ from torch.nn import AvgPool1d, TripletMarginLoss
 from torch.optim import lr_scheduler
 from torchvision import transforms
 from data_loader import get_loaders
-from torchsummary import summary
+from hw3 import dim_reduce
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-# t is a tensor with dimensions N x 1000, return a tensor with dimensions N x 50
-def dim_reduce(t):
-    m = AvgPool1d(20)   
-    t = m(t.unsqueeze(1))
-    return t.squeeze()
- 
-# Make a complete derangement of tensor t
-def make_derangement(t):
-
-    t_list = list(t) 
-    new_indices = []
-    indices = [0]
-
-    while len(new_indices) < len(t_list):
-
-        if len(indices) == 1 and indices[0] == len(new_indices):
-            indices = list(range(len(t_list)))
-            new_indices = []
-            continue
-        
-        random.shuffle(indices)
-    
-        while len(indices) > 0 and indices[0] != len(new_indices):
-            new_indices.append(indices.pop(0))
-
-    new_list = [t_list[i] for i in new_indices]
-    return torch.stack(new_list, 0)
    
 def train(epochs, model, data_loaders, model_path):
 
@@ -110,23 +82,9 @@ if __name__ == "__main__":
     # Get arguments
     parser = argparse.ArgumentParser(description='CS2770 HW3')
     parser.add_argument('--epochs', type=int, default=10, help='The number of epochs')
-    parser.add_argument('--model', type=str, default='alex', help='The type of CNN to use, either "alex" for AlexNet or "res" for Resnet18')
-    parser.add_argument('--embedding', type=str, default='glove', help='The word embedding to use.  Must be "glove" or "w2v"')
-    parser.add_argument('--image_data_set', type=str, default='coco', help='The image data set(s) to use.  Must be "coco" or "news"')
-    parser.add_argument('--cross_domain_eval', type=str, help='Set to "true" to evaluate on the other image data set')
     parser.add_argument('--data_dir', type=pathlib.Path, help='The directory where image and embedding pickle files can be found')
     parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
     args = parser.parse_args()
-    
-    # Validate arguments
-    if not (args.model == "alex" or args.model == "res"):
-        raise Exception('Expected "alex" or "res" as model, found {args.model}')
-    
-    if not (args.embedding == "glove" or args.embedding == "w2v"):
-        raise Exception('Expected "glove" or "w2v" as embedding, found {args.embedding}')
-    
-    if not (args.image_data_set == "coco" or args.image_data_set == "news"):
-        raise Exception('Expected "coco" or "news" as image data set, found {args.image_data_set}')
               
     if not os.path.exists(args.data_dir):
         raise Exception('Not a valid path to find image and embedding pickle files: {args.data_dir}')
@@ -134,26 +92,24 @@ if __name__ == "__main__":
         os.makedirs(args.output_dir)
     
     # Create parameters and model
-    model_path = os.path.join(args.output_dir, f'{args.model}_{args.embedding}_{args.epochs}_{args.image_data_set}.pth')
+    model_path = os.path.join(args.output_dir, f'best_cross_domain_adaptation.pth')
     batch_size = 128
     num_workers = 2
-    model = models.alexnet(pretrained=True) if args.model == "alex" else models.resnet18(pretrained=True)
+    model = models.alexnet(pretrained=True)
     
     # Training
-    print(f'Training with model {args.model}, embedding {args.embedding}, image data set {args.image_data_set}')
-    data_loaders = get_loaders(args.data_dir, args.image_data_set, args.embedding, batch_size, num_workers)
-    train(args.epochs, model, data_loaders, model_path)
-    
-    # Testing
-    print(f'Testing with model {args.model}, embedding {args.embedding}, image data set {args.image_data_set}')
+    print(f'Cross-domain adaptation: training')
+    coco_data_loaders = get_loaders(args.data_dir, "coco", "glove", batch_size, num_workers)
+    news_data_loaders = get_loaders(args.data_dir, "news", "glove", batch_size, num_workers)
+    train(args.epochs, model, model_path, coco_data_loaders, news_data_loaders)
     model.load_state_dict(torch.load(model_path))
-    image_to_text, text_to_image = get_test_results(model, data_loaders['test'])
-    print(f'Model accuracy: image-to-text {image_to_text}; text-to-image {text_to_image}')
     
-    # Cross-Domain Testing
-    if args.cross_domain_eval == "true":
-        img_data_set = "news" if args.image_data_set == "coco" else "coco"
-        print(f'Testing with model {args.model}, embedding {args.embedding}, image data set {img_data_set}')
-        cd_data_loader = get_loaders(args.data_dir, img_data_set, args.embedding, batch_size, num_workers)['train']
-        image_to_text, text_to_image = get_test_results(model, cd_data_loader)
-        print(f'Model accuracy: image-to-text {image_to_text}; text-to-image {text_to_image}')   
+    # Testing COCO
+    print(f'Testing COCO')
+    image_to_text, text_to_image = get_test_results(model, coco_data_loaders['test'])
+    print(f'COCO Model accuracy: image-to-text {image_to_text}; text-to-image {text_to_image}')
+    
+    # Testing Good News
+    print(f'Testing Good News')
+    image_to_text, text_to_image = get_test_results(model, news_data_loaders['test'])
+    print(f'Good News Model accuracy: image-to-text {image_to_text}; text-to-image {text_to_image}')    
