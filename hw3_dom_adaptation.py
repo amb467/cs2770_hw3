@@ -1,7 +1,6 @@
 import argparse, copy, os, pathlib, random, torch
-import torch.optim as optim
+import torch.nn, torch.optim as optim
 import torchvision.models as models
-from torch.nn import AvgPool1d, TripletMarginLoss
 from torch.optim import lr_scheduler
 from torchvision import transforms
 from data_loader import get_loaders
@@ -10,12 +9,13 @@ from hw3 import dim_reduce
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
    
-def train(epochs, model, data_loaders, model_path):
+def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
 
     model.to(device)
-    #summary(model, (3, 299, 299))
+    linear = nn.Linear(1000, 2)
 
-    criterion = TripletMarginLoss()
+    retrieval_criterion = nn.TripletMarginLoss()
+    domain_predict_criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
@@ -28,38 +28,63 @@ def train(epochs, model, data_loaders, model_path):
     
         model.train()
         
-        for i, (inputs, targets) in enumerate(data_loaders['train']):
-            print(f"Training batch {i} of {len(data_loaders['train'])}")
+        for i, (inputs, targets) in enumerate(coco_data_loaders['train']):
+            print(f"Training source batch {i} of {len(coco_data_loaders['train'])}")
         
             # Set mini-batch dataset
             inputs = inputs.to(device)
             targets = targets.to(device)
 
             optimizer.zero_grad()
-            outputs = dim_reduce(model(inputs))
-    
-            # Make a derangement of targets so the negative is always different from positive
+            outputs = model(inputs)
+            
+            # Calculate the loss for retrieval
             negatives = make_derangement(targets)
-            loss = criterion(outputs, targets, negatives)
+            retrieval_loss = retrieval_criterion(dim_reduce(outputs), targets, negatives)
+            
+            # Calculate the loss from domain prediction
+            domain_predict_loss = domain_predict_criterion(linear(outputs), 1)
+            
+            # Combine losses
+            loss = torch.sub(retrieval_loss, domain_predict_loss)
             loss.backward()
             optimizer.step()
+        
+        target_len = math.floor(len(news_data_loaders['train']) / 10)
+        
+        for i, (inputs, targets) in enumerate(coco_data_loaders['train']):
+        	if i > target_len:
+        		break
+        		
+            print(f"Training target batch {i} of {target_len}")
+        
+            # Set mini-batch dataset
+            inputs = inputs.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(inputs)
+                        
+            # We only use domain prediction loss here
+            loss = domain_predict_criterion(linear(outputs), 0)
+            loss.backward()
+            optimizer.step()        
     
         scheduler.step()
-
-        image_to_text, text_to_image = get_test_results(model, data_loaders['val'])
+		
+        image_to_text, text_to_image = get_test_results(model, coco_data_loaders['val'], news_data_loaders['val'])
         if image_to_text > best_acc:
             best_acc = image_to_text
             best_model_wts = copy.deepcopy(model.state_dict())
             torch.save(best_model_wts, model_path)
         
-def get_test_results(model, data_loader):
+def get_test_results(model, coco_data_loader, news_data_loader):
 
     model.eval()
     image_to_text = []
     text_to_image = []
     
-    for i, (inputs, targets) in enumerate(data_loader):
-        print(f"Validating batch {i} of {len(data_loader)}")
+    for i, (inputs, targets) in enumerate(coco_data_loader):
+        print(f"Validating COCO batch {i} of {len(data_loader)}")
         inputs = inputs.to(device)
         targets = targets.to(device)
         outputs = dim_reduce(model(inputs))
@@ -71,7 +96,22 @@ def get_test_results(model, data_loader):
 
         values, indices = torch.min(distances, 1)
         for n, i in enumerate(indices):
-            text_to_image.append(1.0 if n == int(i) else 0.0)        
+            text_to_image.append(1.0 if n == int(i) else 0.0)
+
+    for i, (inputs, targets) in enumerate(news_data_loader):   
+        print(f"Validating Good News batch {i} of {len(data_loader)}")
+        inputs = inputs.to(device)
+        targets = targets.to(device)
+        outputs = dim_reduce(model(inputs))
+        distances = torch.cdist(targets, outputs)
+        
+        values, indices = torch.min(distances, 0)
+        for n, i in enumerate(indices):
+            image_to_text.append(1.0 if n == int(i) else 0.0)
+
+        values, indices = torch.min(distances, 1)
+        for n, i in enumerate(indices):
+            text_to_image.append(1.0 if n == int(i) else 0.0)   
         
     image_to_text = sum(image_to_text) / float(len(image_to_text))
     text_to_image = sum(text_to_image) / float(len(text_to_image))
