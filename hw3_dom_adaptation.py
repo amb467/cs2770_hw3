@@ -113,11 +113,10 @@ def validate(model, coco_data_loader, news_data_loader):
         
         values, indices = torch.min(distances, 0)
         for n, i in enumerate(indices):
-            image_to_text.append(1.0 if n == int(i) else 0.0)
-
+            text_to_image.append(1.0 if n == int(i) else 0.0)
         values, indices = torch.min(distances, 1)
         for n, i in enumerate(indices):
-            text_to_image.append(1.0 if n == int(i) else 0.0)
+            image_to_text.append(1.0 if n == int(i) else 0.0)
 
     for i, (inputs, targets) in enumerate(news_data_loader):   
         inputs = inputs.to(device)
@@ -127,11 +126,10 @@ def validate(model, coco_data_loader, news_data_loader):
         
         values, indices = torch.min(distances, 0)
         for n, i in enumerate(indices):
-            image_to_text.append(1.0 if n == int(i) else 0.0)
-
+            text_to_image.append(1.0 if n == int(i) else 0.0)   
         values, indices = torch.min(distances, 1)
         for n, i in enumerate(indices):
-            text_to_image.append(1.0 if n == int(i) else 0.0)   
+            image_to_text.append(1.0 if n == int(i) else 0.0)
         
     image_to_text = sum(image_to_text) / float(len(image_to_text))
     text_to_image = sum(text_to_image) / float(len(text_to_image))
