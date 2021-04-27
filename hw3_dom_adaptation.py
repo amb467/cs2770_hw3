@@ -32,7 +32,7 @@ def make_derangement(ts):
 def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_size):
 
     model = model.to(device)
-    linear = nn.Linear(1000, 2).to(device)
+    linear = nn.Linear(1000, 1).to(device)
 
     retrieval_criterion = nn.TripletMarginLoss()
     domain_predict_criterion = nn.CrossEntropyLoss()
@@ -54,6 +54,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
         
         for inputs, targets in coco_data_loaders['train']:
         
+            print(f'Inputs has size {inputs.size()}')
             # Set mini-batch dataset
             inputs = inputs.to(device)
             targets = targets.to(device)
