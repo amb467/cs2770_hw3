@@ -56,9 +56,7 @@ def train(epochs, model, data_loaders, model_path):
     
         model.train()
         
-        for i, (inputs, targets) in enumerate(data_loaders['train']):
-            print(f"Training batch {i} of {len(data_loaders['train'])}")
-        
+        for inputs, targets in data_loaders['train']:
             # Set mini-batch dataset
             inputs = inputs.to(device)
             targets = targets.to(device)
