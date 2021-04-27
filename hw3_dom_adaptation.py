@@ -50,13 +50,10 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             loss.backward()
             optimizer.step()
         
-        target_len = math.floor(len(news_data_loaders['train']) / 10)
-        
+        target_len = math.floor(len(news_data_loaders['train']) / 10)      
         for i, (inputs, targets) in enumerate(coco_data_loaders['train']):
             if i > target_len:
                 break
-                
-            print(f"Training target batch {i} of {target_len}")
         
             # Set mini-batch dataset
             inputs = inputs.to(device)
@@ -65,7 +62,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             outputs = model(inputs)
                         
             # We only use domain prediction loss here
-            loss = domain_predict_criterion(linear(outputs), 0)
+            loss = -1 * domain_predict_criterion(linear(outputs), 0)
             loss.backward()
             optimizer.step()        
     
