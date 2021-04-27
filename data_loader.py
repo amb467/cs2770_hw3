@@ -41,7 +41,7 @@ class ImageDataset(data.Dataset):
     def __getitem__(self, index):
         img_id = self.image_ids[index]
         caption = self.captions[index]
-        print('Caption is: {caption}')
+        print(f'Caption is: {caption}')
         img_path = self.image_paths[index]
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
