@@ -63,7 +63,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             retrieval_loss = retrieval_criterion(dim_reduce(outputs), targets, negatives)
             
             # Calculate the loss from domain prediction
-            domain_predict_loss = domain_predict_criterion(linear(outputs), 1)
+            domain_predict_loss = domain_predict_criterion(linear(outputs.to(device)), 1)
             
             # Combine losses
             loss = torch.sub(retrieval_loss, domain_predict_loss)
