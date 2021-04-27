@@ -8,6 +8,26 @@ from hw3 import dim_reduce
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+def derange(l):
+  if len(l) == 1:
+    return None
+  l_copy = l.copy()
+  random.shuffle(l_copy)
+  new_l = []
+
+  for i in range(len(l)):
+    if l[i] == l_copy[0]:
+      l_copy = derange(l_copy)
+      if l_copy is None:
+        return derange(l)
+    new_l.append(l_copy.pop(0))
+  return new_l
+
+def make_derangement(ts):
+  l = ts.tolist()
+  l = derange(l)
+  return torch.Tensor(l)
    
 def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
 
