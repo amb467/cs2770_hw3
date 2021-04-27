@@ -41,7 +41,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
 
     out_domain = torch.zeros(batch_size).to(device)
     in_domain = out_domain + 1
-    in_domain = indomain.to(device)
+    in_domain = in_domain.to(device)
     
     best_model_wts = None
     best_acc = 0.0
