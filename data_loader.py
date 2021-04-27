@@ -151,7 +151,7 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
         news_ds[ds]['image-paths'] = image_paths
                 
         for img_url, img_file_path in zip(urls, image_paths):
-        	print(f'Image url: {img_url}')
+            print(f'Image url: {img_url}')
             img_data = requests.get(img_url, stream=True).content        
             with open(img_file_path,'wb') as f:
                 f.write(img_data)
