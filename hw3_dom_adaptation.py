@@ -53,9 +53,9 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
         target_len = math.floor(len(news_data_loaders['train']) / 10)
         
         for i, (inputs, targets) in enumerate(coco_data_loaders['train']):
-        	if i > target_len:
-        		break
-        		
+            if i > target_len:
+                break
+                
             print(f"Training target batch {i} of {target_len}")
         
             # Set mini-batch dataset
@@ -70,7 +70,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             optimizer.step()        
     
         scheduler.step()
-		
+        
         image_to_text, text_to_image = get_test_results(model, coco_data_loaders['val'], news_data_loaders['val'])
         if image_to_text > best_acc:
             best_acc = image_to_text

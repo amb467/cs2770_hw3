@@ -113,7 +113,7 @@ if __name__ == "__main__":
     parser.add_argument('--model', type=str, default='alex', help='The type of CNN to use, either "alex" for AlexNet or "res" for Resnet18')
     parser.add_argument('--embedding', type=str, default='glove', help='The word embedding to use.  Must be "glove" or "w2v"')
     parser.add_argument('--image_data_set', type=str, default='coco', help='The image data set(s) to use.  Must be "coco" or "news"')
-    parser.add_argument('--cross_domain_eval', type=str, help='Set to "true" to evaluate on the other image data set')
+    parser.add_argument('--cross_domain_eval', action='store_true', help='Use this flag to do cross-domain evaluation on the data set not used for training')
     parser.add_argument('--data_dir', type=pathlib.Path, help='The directory where image and embedding pickle files can be found')
     parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
     args = parser.parse_args()
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     print(f'Model accuracy: image-to-text {image_to_text}; text-to-image {text_to_image}')
     
     # Cross-Domain Testing
-    if args.cross_domain_eval == "true":
+    if args.cross_domain_eval:
         img_data_set = "news" if args.image_data_set == "coco" else "coco"
         print(f'Testing with model {args.model}, embedding {args.embedding}, image data set {img_data_set}')
         cd_data_loader = get_loaders(args.data_dir, img_data_set, args.embedding, batch_size, num_workers)['train']
