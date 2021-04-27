@@ -41,6 +41,7 @@ class ImageDataset(data.Dataset):
     def __getitem__(self, index):
         img_id = self.image_ids[index]
         caption = self.captions[index]
+        print('Caption is: {caption}')
         img_path = self.image_paths[index]
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
@@ -221,6 +222,7 @@ if __name__ == "__main__":
     parser.add_argument('--image_dir', type=pathlib.Path, help='Directory with image files')
     parser.add_argument('--coco_data_file', type=pathlib.Path, help='COCO JSON file with image data')
     parser.add_argument('--news_data_file', type=pathlib.Path, help='Good News tab-delimited file')
+    parser.add_argument('--news_download_images', action='store_true', help='Use this flag to download images news images when creating the serialized object'))
     
     args = parser.parse_args()
     
@@ -234,4 +236,4 @@ if __name__ == "__main__":
         create_coco_image_sets(args.image_dir, args.coco_data_file, args.output_dir)
     
     if args.news_data_file is not None:
-        create_good_news_image_sets(args.image_dir, args.news_data_file, args.output_dir)
+        create_good_news_image_sets(args.image_dir, args.news_data_file, args.output_dir, (args.news_download_images == True))
