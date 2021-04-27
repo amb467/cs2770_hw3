@@ -38,10 +38,6 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
     domain_predict_criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-
-    out_domain = torch.zeros(batch_size, dtype=torch.long).to(device)
-    in_domain = out_domain + 1
-    in_domain = in_domain.to(device)
     
     best_model_wts = None
     best_acc = 0.0
@@ -54,8 +50,8 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
         
         for inputs, targets in coco_data_loaders['train']:
         
-            if len(inputs) != batch_size:
-                continue
+            #if len(inputs) != batch_size:
+            #    continue
                 
             # Set mini-batch dataset
             inputs = inputs.to(device)
@@ -69,6 +65,8 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
             retrieval_loss = retrieval_criterion(dim_reduce(outputs), targets, negatives)
             
             # Calculate the loss from domain prediction
+            in_domain = torch.zeros(len(outputs), dtype=torch.long).to(device)
+            in_domain = in_domain + 1
             domain_predict_loss = domain_predict_criterion(linear(outputs), in_domain)
             
             # Combine losses
@@ -88,6 +86,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
             outputs = model(inputs)
                         
             # We only use domain prediction loss here
+            out_domain = torch.zeros(batch_size, dtype=torch.long).to(device)
             loss = -1 * domain_predict_criterion(linear(outputs), out_domain)
             loss.backward()
             optimizer.step()        
