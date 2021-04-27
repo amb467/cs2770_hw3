@@ -59,7 +59,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             outputs = model(inputs)
             
             # Calculate the loss for retrieval
-            negatives = make_derangement(targets)
+            negatives = make_derangement(targets).to(device)
             retrieval_loss = retrieval_criterion(dim_reduce(outputs), targets, negatives)
             
             # Calculate the loss from domain prediction
