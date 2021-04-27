@@ -122,6 +122,7 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
 # For the Good News corpus, download files and create data objects for training, validation, and test sets
 def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5000, do_img_download=True):
 
+    print("In create_good_news_image_sets")
     # Create a directory to save the image files if it doesn't exist
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
