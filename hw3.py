@@ -84,7 +84,7 @@ def get_test_results(model, data_loader):
     image_to_text = []
     text_to_image = []
     
-    for inputs, targets in enumerate(data_loader):
+    for inputs, targets in data_loader:
         inputs = inputs.to(device)
         targets = targets.to(device)
         outputs = dim_reduce(model(inputs))
