@@ -106,7 +106,6 @@ def get_test_results(model, coco_data_loader, news_data_loader):
     text_to_image = []
     
     for i, (inputs, targets) in enumerate(coco_data_loader):
-        print(f"Validating COCO batch {i} of {len(data_loader)}")
         inputs = inputs.to(device)
         targets = targets.to(device)
         outputs = dim_reduce(model(inputs))
@@ -121,7 +120,6 @@ def get_test_results(model, coco_data_loader, news_data_loader):
             text_to_image.append(1.0 if n == int(i) else 0.0)
 
     for i, (inputs, targets) in enumerate(news_data_loader):   
-        print(f"Validating Good News batch {i} of {len(data_loader)}")
         inputs = inputs.to(device)
         targets = targets.to(device)
         outputs = dim_reduce(model(inputs))
