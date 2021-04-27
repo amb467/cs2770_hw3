@@ -115,7 +115,7 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
     pickle.dump(coco_ds, open(output_file, 'wb'))
 
 # For the Good News corpus, download files and create data objects for training, validation, and test sets
-def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
+def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5000, do_img_download=True):
 
     # Create a directory to save the image files if it doesn't exist
     if not os.path.exists(img_dir):
@@ -149,12 +149,12 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
         urls = [file_data[i]['img_url'] for i in ids]
         image_paths = [os.path.join(img_dir, f'{i}.jpg') for i in ids]
         news_ds[ds]['image-paths'] = image_paths
-                
-        for img_url, img_file_path in zip(urls, image_paths):
-            print(f'Image url: {img_url}')
-            img_data = requests.get(img_url, stream=True).content        
-            with open(img_file_path,'wb') as f:
-                f.write(img_data)
+        
+        if do_img_download:     
+            for img_url, img_file_path in zip(urls, image_paths):
+                img_data = requests.get(img_url, stream=True).content        
+                with open(img_file_path,'wb') as f:
+                    f.write(img_data)
     
     # Output the data objects for each split
     output_file = os.path.join(output_dir, IMAGE_DATA_SET['news'])
