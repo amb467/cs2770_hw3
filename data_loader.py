@@ -42,7 +42,6 @@ class ImageDataset(data.Dataset):
         img_id = self.image_ids[index]
         caption = self.captions[index]
         img_path = self.image_paths[index]
-        print(f'Image path: {img_path}')
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
             image = self.transform(image)
