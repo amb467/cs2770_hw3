@@ -40,6 +40,12 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
+    in_domain = torch.Tensor([1])
+    in_domain.to(device)
+    
+    out_domain = torch.Tensor([0])
+    out_domain.to(device)
+    
     best_model_wts = None
     best_acc = 0.0
     
@@ -65,7 +71,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             retrieval_loss = retrieval_criterion(dim_reduce(outputs), targets, negatives)
             
             # Calculate the loss from domain prediction
-            domain_predict_loss = domain_predict_criterion(linear(outputs), torch.Tensor([1]))
+            domain_predict_loss = domain_predict_criterion(linear(outputs), in_domain)
             
             # Combine losses
             loss = torch.sub(retrieval_loss, domain_predict_loss)
@@ -84,7 +90,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             outputs = model(inputs)
                         
             # We only use domain prediction loss here
-            loss = -1 * domain_predict_criterion(linear(outputs), torch.Tensor([0]))
+            loss = -1 * domain_predict_criterion(linear(outputs), out_domain)
             loss.backward()
             optimizer.step()        
     
