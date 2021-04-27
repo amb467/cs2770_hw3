@@ -49,9 +49,6 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
         model.train()
         
         for inputs, targets in coco_data_loaders['train']:
-        
-            #if len(inputs) != batch_size:
-            #    continue
                 
             # Set mini-batch dataset
             inputs = inputs.to(device)
