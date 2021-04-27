@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 
 EMBEDDING_FILE = {
     'glove': 'glove.pkl',
-    'word2vec': 'word2vec.pkl'
+    'w2v': 'word2vec.pkl'
 }
 
 IMAGE_DATA_SET = {
