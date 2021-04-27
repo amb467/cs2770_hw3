@@ -84,8 +84,7 @@ def get_test_results(model, data_loader):
     image_to_text = []
     text_to_image = []
     
-    for i, (inputs, targets) in enumerate(data_loader):
-        print(f"Validating batch {i} of {len(data_loader)}")
+    for inputs, targets in enumerate(data_loader):
         inputs = inputs.to(device)
         targets = targets.to(device)
         outputs = dim_reduce(model(inputs))
@@ -107,7 +106,7 @@ if __name__ == "__main__":
 
     # Get arguments
     parser = argparse.ArgumentParser(description='CS2770 HW3')
-    parser.add_argument('--epochs', type=int, default=10, help='The number of epochs')
+    parser.add_argument('--epochs', type=int, default=25, help='The number of epochs')
     parser.add_argument('--model', type=str, default='alex', help='The type of CNN to use, either "alex" for AlexNet or "res" for Resnet18')
     parser.add_argument('--embedding', type=str, default='glove', help='The word embedding to use.  Must be "glove" or "w2v"')
     parser.add_argument('--image_data_set', type=str, default='coco', help='The image data set(s) to use.  Must be "coco" or "news"')
