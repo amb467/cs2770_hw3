@@ -55,8 +55,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
     
         model.train()
         
-        for i, (inputs, targets) in enumerate(coco_data_loaders['train']):
-            print(f"Training source batch {i} of {len(coco_data_loaders['train'])}")
+        for inputs, targets in coco_data_loaders['train']:
         
             # Set mini-batch dataset
             inputs = inputs.to(device)
