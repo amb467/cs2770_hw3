@@ -29,7 +29,7 @@ def make_derangement(ts):
   l = derange(l)
   return torch.Tensor(l)
    
-def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
+def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_size):
 
     model = model.to(device)
     linear = nn.Linear(1000, 2).to(device)
@@ -39,8 +39,9 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-    in_domain = torch.Tensor([1]).to(device)
-    out_domain = torch.Tensor([0]).to(device)
+    out_domain = torch.zeros(batch_size).to(device)
+    in_domain = out_domain + 1
+    in_domain = indomain.to(device)
     
     best_model_wts = None
     best_acc = 0.0
@@ -160,7 +161,7 @@ if __name__ == "__main__":
     print(f'Cross-domain adaptation: training')
     coco_data_loaders = get_loaders(args.data_dir, "coco", "glove", batch_size, num_workers)
     news_data_loaders = get_loaders(args.data_dir, "news", "glove", batch_size, num_workers)
-    train(args.epochs, model, model_path, coco_data_loaders, news_data_loaders)
+    train(args.epochs, model, model_path, coco_data_loaders, news_data_loaders, batch_size)
     model.load_state_dict(torch.load(model_path))
     
     # Testing COCO
