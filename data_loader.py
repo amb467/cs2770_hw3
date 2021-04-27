@@ -71,13 +71,9 @@ def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
     
     data_loaders = {}
     for ds, obj in datasets.items():
-        print(f'Data set is {ds}')
         image_ids = obj['image-ids']
-        print(f'Length of image ids: {len(image_ids)}')
         captions = obj['captions']
-        print(f'Length of captions: {len(captions)}')
         image_paths = obj['image-paths']
-        print(f'Length of image paths: {len(image_paths)}')
         dataset = ImageDataset(image_ids, captions, image_paths, vocab)
         data_loaders[ds] = torch.utils.data.DataLoader(dataset=dataset, 
                                               batch_size=batch_size,
@@ -150,13 +146,10 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, do_img_downl
         print(f'For data set {ds}')
         news_ds[ds] = {}
         news_ds[ds]['image-ids'] = ids
-        print(f"Length of image ids: {len(news_ds[ds]['image-ids'])}")
         news_ds[ds]['captions'] = [file_data[i]['caption'] for i in ids]
-        print(f"Length of captions: {len(news_ds[ds]['captions'])}")
         urls = [file_data[i]['img_url'] for i in ids]
         image_paths = [os.path.join(img_dir, f'{i}.jpg') for i in ids]
         news_ds[ds]['image-paths'] = image_paths
-        print(f"Length of image paths: {len(news_ds[ds]['image-paths'])}")
         
         if do_img_download:     
             for img_url, img_file_path in zip(urls, image_paths):
@@ -201,7 +194,6 @@ def prepare_embeddings(embedding_file, output_dir):
     glove_embeddings = pd.DataFrame(glove_embeddings)
     glove_embeddings = normalize_reduce(glove_embeddings)
     glove_embeddings = dict(zip(glove_words, glove_embeddings.tolist()))
-    print(f'GloVe embeddings have type {type(glove_embeddings)}')
     
     output_file = os.path.join(args.output_dir, EMBEDDING_FILE['glove'])
     print(f'Outputting GloVe embeddings to file {output_file}')
