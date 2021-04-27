@@ -143,17 +143,21 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
 
     # Create train, validation, and test splits
     id_list = list(file_data.keys())
+    print(f'Length of id list: {id_list}')
     data_sets = create_splits(id_list, max_images)
 
     news_ds = {}
     for ds, ids in data_sets.items():
+        print(f'For data set {ds}')
         news_ds[ds] = {}
         news_ds[ds]['image-ids'] = ids
+        print(f"Length of image ids: {len(news_ds[ds]['image-ids'])}")
         news_ds[ds]['captions'] = [file_data[i]['caption'] for i in ids]
-        
+        print(f"Length of captions: {len(news_ds[ds]['captions'])}")
         urls = [file_data[i]['img_url'] for i in ids]
         image_paths = [os.path.join(img_dir, f'{i}.jpg') for i in ids]
         news_ds[ds]['image-paths'] = image_paths
+        print(f"Length of image paths: {len(news_ds[ds]['image-paths'])}")
         
         if do_img_download:     
             for img_url, img_file_path in zip(urls, image_paths):
