@@ -1,5 +1,5 @@
 import argparse, copy, os, pathlib, random, torch
-import torch.nn, torch.optim as optim
+import torch.nn as nn, torch.optim as optim
 import torchvision.models as models
 from torch.optim import lr_scheduler
 from torchvision import transforms
