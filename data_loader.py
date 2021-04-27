@@ -42,6 +42,7 @@ class ImageDataset(data.Dataset):
         img_id = self.image_ids[index]
         caption = self.captions[index]
         img_path = self.image_paths[index]
+        print(f'Image path: {img_path}')
         image = Image.open(img_path).convert('RGB')
         if self.transform is not None:
             image = self.transform(image)
@@ -63,6 +64,7 @@ def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
     
     data_set_path = os.path.join(data_dir, IMAGE_DATA_SET[img_data_set])
     datasets = pickle.load(open(data_set_path, 'rb'))
+    
     # Open embedding
     embedding_path = os.path.join(data_dir, EMBEDDING_FILE[embedding])
     vocab = pickle.load(open(embedding_path, 'rb'))
