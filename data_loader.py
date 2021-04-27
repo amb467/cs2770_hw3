@@ -120,9 +120,8 @@ def create_coco_image_sets(img_dir, img_data_file, output_dir, max_images=5000):
     pickle.dump(coco_ds, open(output_file, 'wb'))
 
 # For the Good News corpus, download files and create data objects for training, validation, and test sets
-def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5000, do_img_download=True):
+def create_good_news_image_sets(img_dir, img_data_file, output_dir, do_img_download=True, max_images=5000):
 
-    print("In create_good_news_image_sets")
     # Create a directory to save the image files if it doesn't exist
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
@@ -144,7 +143,6 @@ def create_good_news_image_sets(img_dir, img_data_file, output_dir, max_images=5
 
     # Create train, validation, and test splits
     id_list = list(file_data.keys())
-    print(f'Length of id list: {id_list}')
     data_sets = create_splits(id_list, max_images)
 
     news_ds = {}
