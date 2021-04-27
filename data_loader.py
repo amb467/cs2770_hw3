@@ -222,7 +222,7 @@ if __name__ == "__main__":
     parser.add_argument('--image_dir', type=pathlib.Path, help='Directory with image files')
     parser.add_argument('--coco_data_file', type=pathlib.Path, help='COCO JSON file with image data')
     parser.add_argument('--news_data_file', type=pathlib.Path, help='Good News tab-delimited file')
-    parser.add_argument('--news_download_images', action='store_true', help='Use this flag to download images news images when creating the serialized object'))
+    parser.add_argument('--news_download_images', action='store_true', help='Use this flag to download images news images when creating the serialized object')
     
     args = parser.parse_args()
     
