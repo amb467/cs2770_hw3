@@ -54,7 +54,9 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
         
         for inputs, targets in coco_data_loaders['train']:
         
-            print(f'Inputs has size {inputs.size()}')
+            if len(inputs) != batch_size:
+                continue
+                
             # Set mini-batch dataset
             inputs = inputs.to(device)
             targets = targets.to(device)
@@ -67,8 +69,6 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
             retrieval_loss = retrieval_criterion(dim_reduce(outputs), targets, negatives)
             
             # Calculate the loss from domain prediction
-            l = linear(outputs)
-            print(f'Linear has size: {l.size()}')
             domain_predict_loss = domain_predict_criterion(linear(outputs), in_domain)
             
             # Combine losses
