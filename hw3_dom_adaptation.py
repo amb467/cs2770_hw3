@@ -31,20 +31,16 @@ def make_derangement(ts):
    
 def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
 
-    model.to(device)
-    linear = nn.Linear(1000, 2)
-    linear.to(device)
+    model = model.to(device)
+    linear = nn.Linear(1000, 2).to(device)
 
     retrieval_criterion = nn.TripletMarginLoss()
     domain_predict_criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-    in_domain = torch.Tensor([1])
-    in_domain.to(device)
-    
-    out_domain = torch.Tensor([0])
-    out_domain.to(device)
+    in_domain = torch.Tensor([1]).to(device)
+    out_domain = torch.Tensor([0]).to(device)
     
     best_model_wts = None
     best_acc = 0.0
@@ -65,8 +61,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders):
             outputs = model(inputs)
             
             # Calculate the loss for retrieval
-            negatives = make_derangement(targets)
-            negatives.to(device)
+            negatives = make_derangement(targets).to(device)
             retrieval_loss = retrieval_criterion(dim_reduce(outputs), targets, negatives)
             
             # Calculate the loss from domain prediction
