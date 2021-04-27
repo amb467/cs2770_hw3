@@ -71,9 +71,13 @@ def get_loaders(data_dir, img_data_set, embedding, batch_size, num_workers):
     
     data_loaders = {}
     for ds, obj in datasets.items():
+        print(f'Data set is {ds}')
         image_ids = obj['image-ids']
+        print(f'Length of image ids: {len(image_ids)}')
         captions = obj['captions']
+        print(f'Length of captions: {len(captions)}')
         image_paths = obj['image-paths']
+        print(f'Length of image paths: {len(image_paths)}')
         dataset = ImageDataset(image_ids, captions, image_paths, vocab)
         data_loaders[ds] = torch.utils.data.DataLoader(dataset=dataset, 
                                               batch_size=batch_size,
