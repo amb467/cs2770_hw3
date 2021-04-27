@@ -39,7 +39,7 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
-    out_domain = torch.zeros(batch_size).to(device)
+    out_domain = torch.zeros(batch_size, dtype=torch.long).to(device)
     in_domain = out_domain + 1
     in_domain = in_domain.to(device)
     
