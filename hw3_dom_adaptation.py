@@ -4,7 +4,7 @@ import torchvision.models as models
 from torch.optim import lr_scheduler
 from torchvision import transforms
 from data_loader import get_loaders
-from hw3 import dim_reduce
+from hw3 import dim_reduce, get_test_results
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -93,13 +93,13 @@ def train(epochs, model, model_path, coco_data_loaders, news_data_loaders, bath_
     
         scheduler.step()
         
-        image_to_text, text_to_image = get_test_results(model, coco_data_loaders['val'], news_data_loaders['val'])
+        image_to_text, text_to_image = validate(model, coco_data_loaders['val'], news_data_loaders['val'])
         if image_to_text > best_acc:
             best_acc = image_to_text
             best_model_wts = copy.deepcopy(model.state_dict())
             torch.save(best_model_wts, model_path)
         
-def get_test_results(model, coco_data_loader, news_data_loader):
+def validate(model, coco_data_loader, news_data_loader):
 
     model.eval()
     image_to_text = []
@@ -136,12 +136,12 @@ def get_test_results(model, coco_data_loader, news_data_loader):
     image_to_text = sum(image_to_text) / float(len(image_to_text))
     text_to_image = sum(text_to_image) / float(len(text_to_image))
     return image_to_text, text_to_image
-    
+        
 if __name__ == "__main__":
 
     # Get arguments
     parser = argparse.ArgumentParser(description='CS2770 HW3')
-    parser.add_argument('--epochs', type=int, default=10, help='The number of epochs')
+    parser.add_argument('--epochs', type=int, default=25, help='The number of epochs')
     parser.add_argument('--data_dir', type=pathlib.Path, help='The directory where image and embedding pickle files can be found')
     parser.add_argument('--output_dir', type=pathlib.Path, help='Output')
     args = parser.parse_args()
